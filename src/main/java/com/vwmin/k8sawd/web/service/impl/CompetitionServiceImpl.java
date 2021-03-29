@@ -1,5 +1,6 @@
 package com.vwmin.k8sawd.web.service.impl;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.exception.RoutineException;
@@ -10,6 +11,7 @@ import com.vwmin.k8sawd.web.service.SystemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 /**
@@ -38,11 +40,24 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
         // 写入记录，并设置为alive
         save(competition);
-        systemService.setCompetition(competition);
+//        systemService.setCompetition(competition);
+
+        //todo 设置定时任务
     }
 
     private void checkTime(LocalDateTime startTime, LocalDateTime endTime){
-        // todo
+        LocalDateTime nowTime= LocalDateTime.now();
+
+        // 开始时间至少在当前时间 1h 后
+        Duration fromNow = LocalDateTimeUtil.between(nowTime, startTime);
+        if (fromNow.toHours() < 1){
+            throw new RoutineException(ResponseCode.FAIL, "开始时间至少在当前时间 1h 后");
+        }
+
+        // 结束时间至少在开始时间后
+        if (!endTime.isAfter(startTime)){
+            throw new RoutineException(ResponseCode.FAIL, "结束时间至少在开始时间后");
+        }
     }
 
 
