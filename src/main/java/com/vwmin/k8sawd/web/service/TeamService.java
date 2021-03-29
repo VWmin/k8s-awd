@@ -16,4 +16,6 @@ public interface TeamService extends IService<Team> {
      */
     void addTeam(Team team);
 
+    void editTeam(Team team);
+
 }

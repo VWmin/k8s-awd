@@ -18,3 +18,31 @@ Content-Type: application/json
 ### 将所有比赛置为停止
 
 DELETE http://{{hostname}}/manager/system/competition
+
+
+//Team
+
+### 增
+POST http://{{hostname}}/manager/team
+Content-Type: application/json
+
+{
+  "name": "test",
+  "logo": ""
+}
+
+### 删
+DELETE http://{{hostname}}/manager/team?id=2
+
+### 改
+PUT http://{{hostname}}/manager/team
+Content-Type: application/json
+
+{
+  "id": 2,
+  "name": "test2",
+  "logo": ""
+}
+
+### 查
+GET http://{{hostname}}/manager/teams
