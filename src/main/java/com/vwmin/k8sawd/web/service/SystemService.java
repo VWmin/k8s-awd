@@ -14,9 +14,9 @@ public interface SystemService extends IService<System> {
 
     /**
      * 获得一个当前运行中的比赛
-     * @return 是否存在，比赛
+     * @return 是否存在，competition id
      */
-     Pair<Boolean, Competition> runningCompetition();
+     Pair<Boolean, Integer> runningCompetition();
 
 
     /**
@@ -24,6 +24,19 @@ public interface SystemService extends IService<System> {
      * @param competition 要记录的比赛
      */
     void setCompetition(Competition competition);
+
+
+    /**
+     * 检查是否存在正在进行的比赛
+     * @return 检查结果
+     */
+    boolean hasAlive();
+
+
+    /**
+     * 将所有比赛设置为false，开发用
+     */
+    void finishAll();
 
 
 }

@@ -2,3 +2,19 @@
 
 ### 获得一个正在进行中的比赛
 GET http://{{hostname}}/manager/system/runningCompetition
+
+
+### 创建一个比赛，如果成功会被设置为alive
+
+POST http://{{hostname}}/manager/competition
+Content-Type: application/json
+
+{
+  "startTime": "2021-03-29 12:00:00",
+  "endTime": "2021-03-30 12:00:00",
+  "score": 100
+}
+
+### 将所有比赛置为停止
+
+DELETE http://{{hostname}}/manager/system/competition

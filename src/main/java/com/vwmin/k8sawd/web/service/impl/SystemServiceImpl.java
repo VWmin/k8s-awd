@@ -2,6 +2,7 @@ package com.vwmin.k8sawd.web.service.impl;
 
 import cn.hutool.core.lang.Pair;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.System;
@@ -18,16 +19,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class SystemServiceImpl extends ServiceImpl<SystemMapper, System> implements SystemService {
 
-    private final CompetitionService competitionService;
-
-    public SystemServiceImpl(CompetitionService competitionService) {
-        this.competitionService = competitionService;
-    }
 
     @Override
-    public Pair<Boolean, Competition> runningCompetition() {
+    public Pair<Boolean, Integer> runningCompetition() {
         // 如果不存在alive的比赛，返回false
-        if (!hasAlive()){
+        if (!hasAlive()) {
             return new Pair<>(false, null);
         }
 
@@ -38,7 +34,7 @@ public class SystemServiceImpl extends ServiceImpl<SystemMapper, System> impleme
     @Override
     public void setCompetition(Competition competition) {
         // 如果已经存在alive的比赛，则什么都不做
-        if (hasAlive()){
+        if (hasAlive()) {
             return;
         }
 
@@ -50,15 +46,23 @@ public class SystemServiceImpl extends ServiceImpl<SystemMapper, System> impleme
         save(record);
     }
 
-    private boolean hasAlive(){
+    @Override
+    public boolean hasAlive() {
         LambdaQueryWrapper<System> condition = new LambdaQueryWrapper<>();
         condition.eq(System::getIsAlive, true);
         return count(condition) == 1;
     }
 
-    private Competition getAlive(){
+    @Override
+    public void finishAll() {
+        LambdaUpdateWrapper<System> condition = new LambdaUpdateWrapper<>();
+        condition.set(System::getIsAlive, false);
+        update(condition);
+    }
+
+    private Integer getAlive() {
         LambdaQueryWrapper<System> condition = new LambdaQueryWrapper<>();
         condition.eq(System::getIsAlive, true);
-        return competitionService.getById(getOne(condition).getCompetitionId());
+        return getOne(condition).getCompetitionId();
     }
 }
