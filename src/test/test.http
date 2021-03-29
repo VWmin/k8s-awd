@@ -1,0 +1,4 @@
+//Manager
+
+### 获得一个正在进行中的比赛
+GET http://{{hostname}}/manager/system/runningCompetition

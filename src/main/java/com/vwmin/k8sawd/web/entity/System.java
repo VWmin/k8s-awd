@@ -11,11 +11,11 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("system")
+@TableName("sys")
 public class System extends BaseEntity{
 
-    private int competitionId;
+    private Integer competitionId;
 
-    private boolean isAlive;
+    private Boolean isAlive;
 
 }

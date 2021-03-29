@@ -18,8 +18,8 @@ public class Flag extends BaseEntity{
 
     private boolean isUsed;
 
-    private int belongTo;
+    private Integer belongTo;
 
-    private int usedBy;
+    private Integer usedBy;
 
 }

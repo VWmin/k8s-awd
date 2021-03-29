@@ -26,6 +26,6 @@ public class Competition extends BaseEntity {
     private LocalDateTime endTime;
 
 
-    private int score;
+    private Integer score;
 
 }

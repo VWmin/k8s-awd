@@ -19,7 +19,7 @@ public class BaseEntity {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    protected int id;
+    protected Integer id;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(fill = FieldFill.INSERT)

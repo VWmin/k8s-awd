@@ -46,7 +46,7 @@ CREATE TABLE `flag`
     `updated_at` datetime COMMENT '更新时间',
 
     `value`      varchar(255) NOT NULL DEFAULT '' COMMENT 'flag值',
-    `is_used`    boolean      NULL     DEFAULT NULL COMMENT '该flag是否被使用',
+    `is_used`    tinyint(1)   NULL     DEFAULT NULL COMMENT '该flag是否被使用',
     `belong_to`  int          NOT NULL DEFAULT 0 COMMENT 'flag归属的队伍',
     `used_by`    int          NULL     DEFAULT NULL COMMENT '哪个队伍使用了该flag',
     PRIMARY KEY (`id`)
@@ -57,15 +57,15 @@ CREATE TABLE `flag`
 # -- ----------------------------
 # -- system表
 # -- ----------------------------
-DROP TABLE IF EXISTS `system`;
-CREATE TABLE `system`
+DROP TABLE IF EXISTS `sys`;
+CREATE TABLE `sys`
 (
-    `id`             int      NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `created_at`     datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    `id`             int        NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `created_at`     datetime   NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at`     datetime COMMENT '更新时间',
 
-    `competition_id` int      NOT NULL DEFAULT 0 COMMENT '比赛id',
-    `is_alive`       boolean  NOT NULL DEFAULT false COMMENT '比赛是否激活',
+    `competition_id` int        NOT NULL DEFAULT 0 COMMENT '比赛id',
+    `is_alive`       tinyint(1) NOT NULL DEFAULT false COMMENT '比赛是否激活',
 
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB

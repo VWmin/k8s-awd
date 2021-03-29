@@ -9,4 +9,11 @@ import com.vwmin.k8sawd.web.entity.Team;
  * @date 2021/3/29 11:42
  */
 public interface TeamService extends IService<Team> {
+
+    /**
+     * 添加一个队伍
+     * @param team 要添加的队伍
+     */
+    void addTeam(Team team);
+
 }
