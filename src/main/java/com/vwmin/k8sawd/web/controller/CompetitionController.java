@@ -4,6 +4,7 @@ import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.CompetitionService;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.SchedulerException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +28,7 @@ public class CompetitionController {
 
 
     @PostMapping("/competition")
-    public ResponseEntity<Response> create(@RequestBody Competition competition){
+    public ResponseEntity<Response> create(@RequestBody Competition competition) throws SchedulerException {
         log.info("{}", competition);
 
         competitionService.createCompetition(competition);
