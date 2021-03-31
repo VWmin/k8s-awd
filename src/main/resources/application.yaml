@@ -14,6 +14,7 @@ k8s-awd:
   ca-cert-file: ca.crt
   client-cert-file: apiserver-kubelet-client.crt
   client-key-file: apiserver-kubelet-client.key
+  namespace: awd
 
 #mybatis-plus:
 #  configuration:
