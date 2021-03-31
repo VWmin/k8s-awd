@@ -94,6 +94,13 @@
             <version>2.3.2</version>
         </dependency>
 
+        <!--  java连接Kubernetes  -->
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-client</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+
 
     </dependencies>
 

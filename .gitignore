@@ -3,6 +3,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+apiserver-kubelet-client.crt
+apiserver-kubelet-client.key
+ca.crt
 
 ### STS ###
 .apt_generated

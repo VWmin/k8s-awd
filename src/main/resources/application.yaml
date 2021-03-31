@@ -9,6 +9,12 @@ server:
   port: 7070
 
 
+k8s-awd:
+  master-url: https://121.36.230.118:6443
+  ca-cert-file: ca.crt
+  client-cert-file: apiserver-kubelet-client.crt
+  client-key-file: apiserver-kubelet-client.key
+
 #mybatis-plus:
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
