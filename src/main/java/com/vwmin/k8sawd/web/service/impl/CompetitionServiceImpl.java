@@ -10,6 +10,7 @@ import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.CompetitionService;
 import com.vwmin.k8sawd.web.service.SystemService;
 import com.vwmin.k8sawd.web.task.PodPrepareJob;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -29,10 +30,12 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     private final SystemService systemService;
     private final Scheduler scheduler;
+    private final KubernetesClient client;
 
-    public CompetitionServiceImpl(SystemService systemService, Scheduler scheduler) {
+    public CompetitionServiceImpl(SystemService systemService, Scheduler scheduler, KubernetesClient client) {
         this.systemService = systemService;
         this.scheduler = scheduler;
+        this.client = client;
     }
 
     @Override
@@ -52,6 +55,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         // 设置定时任务
 
         JobDetail job = JobBuilder.newJob(PodPrepareJob.class).build();
+        job.getJobDataMap().put("client", client);
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
                 .startAt(localDateTime2Date(competition.getStartTime()))
