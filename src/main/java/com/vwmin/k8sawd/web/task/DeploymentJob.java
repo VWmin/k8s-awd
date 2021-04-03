@@ -12,6 +12,7 @@ import org.quartz.JobExecutionContext;
 import java.util.List;
 
 /**
+ * 创建一个由（比赛，队伍）决定的运行环境
  * @author vwmin
  * @version 1.0
  * @date 2021/3/30 11:05
