@@ -11,6 +11,7 @@ import com.vwmin.k8sawd.web.service.CompetitionService;
 import com.vwmin.k8sawd.web.service.SystemService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import com.vwmin.k8sawd.web.task.DeploymentJob;
+import com.vwmin.k8sawd.web.task.FlagJob;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -56,8 +57,34 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         save(competition);
 //        systemService.setCompetition(competition);
 
-        // 设置定时任务
+        // 设置启动比赛的定时任务
+        setDeploymentTask(competition);
 
+        // 设置更新flag的定时任务 fixme 这里随便找了一个team做测试
+        setFlagTask(competition, 2);
+
+
+    }
+
+    private void setFlagTask(Competition competition, int teamId) throws SchedulerException {
+        JobDetail job = JobBuilder.newJob(FlagJob.class)
+                .usingJobData("competitionId", competition.getId())
+                .usingJobData("teamId", teamId)
+                .build();
+        job.getJobDataMap().put("client", client);
+
+        SimpleTrigger trigger = TriggerBuilder.newTrigger()
+                .startAt(localDateTime2Date(LocalDateTimeUtil.now().plusSeconds(5)))
+                .endAt(localDateTime2Date(competition.getEndTime()))
+                .withSchedule(
+                        SimpleScheduleBuilder.simpleSchedule()
+                                .withIntervalInMinutes(20)
+                ).build();
+
+        scheduler.scheduleJob(job, trigger);
+    }
+
+    private void setDeploymentTask(Competition competition) throws SchedulerException {
         JobDetail job = JobBuilder.newJob(DeploymentJob.class).build();
         // 传入k8s命令环境
         job.getJobDataMap().put("client", client);
@@ -67,7 +94,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         job.getJobDataMap().put("competitionId", competition.getId());
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
-                .startAt(localDateTime2Date(competition.getStartTime()))
+                .startAt(localDateTime2Date(LocalDateTimeUtil.now().plusSeconds(5)))
                 .withSchedule(
                         SimpleScheduleBuilder.simpleSchedule()
                                 .withIntervalInSeconds(0)
@@ -75,7 +102,6 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
                 ).build();
 
         scheduler.scheduleJob(job, trigger);
-
     }
 
     private void checkTime(LocalDateTime startTime, LocalDateTime endTime) {
