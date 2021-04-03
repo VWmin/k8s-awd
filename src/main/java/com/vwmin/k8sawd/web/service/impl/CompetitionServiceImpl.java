@@ -9,11 +9,11 @@ import com.vwmin.k8sawd.web.mapper.CompetitionMapper;
 import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.CompetitionService;
 import com.vwmin.k8sawd.web.service.SystemService;
-import com.vwmin.k8sawd.web.task.PodPrepareJob;
+import com.vwmin.k8sawd.web.service.TeamService;
+import com.vwmin.k8sawd.web.task.DeploymentJob;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -25,15 +25,19 @@ import java.util.Date;
  * @version 1.0
  * @date 2021/3/29 11:45
  */
+@Slf4j
 @Service
 public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Competition> implements CompetitionService {
 
     private final SystemService systemService;
+    private final TeamService teamService;
     private final Scheduler scheduler;
     private final KubernetesClient client;
 
-    public CompetitionServiceImpl(SystemService systemService, Scheduler scheduler, KubernetesClient client) {
+    public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
+                                  Scheduler scheduler, KubernetesClient client) {
         this.systemService = systemService;
+        this.teamService = teamService;
         this.scheduler = scheduler;
         this.client = client;
     }
@@ -54,16 +58,21 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
         // 设置定时任务
 
-        JobDetail job = JobBuilder.newJob(PodPrepareJob.class).build();
+        JobDetail job = JobBuilder.newJob(DeploymentJob.class).build();
+        // 传入k8s命令环境
         job.getJobDataMap().put("client", client);
+        // 传入要启动的队伍信息
+        job.getJobDataMap().put("teams", teamService.list());
+        // 传入当前比赛id
+        job.getJobDataMap().put("competitionId", competition.getId());
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
                 .startAt(localDateTime2Date(competition.getStartTime()))
                 .withSchedule(
                         SimpleScheduleBuilder.simpleSchedule()
                                 .withIntervalInSeconds(0)
-                                .withRepeatCount(0))
-                .build();
+                                .withRepeatCount(0)
+                ).build();
 
         scheduler.scheduleJob(job, trigger);
 

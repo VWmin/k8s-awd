@@ -10,7 +10,7 @@ POST http://{{hostname}}/manager/competition
 Content-Type: application/json
 
 {
-  "startTime": "2021-04-03 16:17:20",
+  "startTime": "2021-04-03 18:58:10",
   "endTime": "2021-04-30 12:00:00",
   "score": 100
 }
@@ -27,7 +27,7 @@ POST http://{{hostname}}/manager/team
 Content-Type: application/json
 
 {
-  "name": "test",
+  "name": "test2",
   "logo": ""
 }
 

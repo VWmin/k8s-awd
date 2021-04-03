@@ -1,8 +1,5 @@
 package com.vwmin.k8sawd.web.conf;
 
-import com.vwmin.k8sawd.web.task.PodPrepareJob;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
@@ -18,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class SchedulerConfig {
 
     @Bean
-    public Scheduler podPrepareScheduler() throws SchedulerException {
+    public Scheduler deploymentScheduler() throws SchedulerException {
         Scheduler scheduler = new StdSchedulerFactory().getScheduler();
         scheduler.start();
         return scheduler;
