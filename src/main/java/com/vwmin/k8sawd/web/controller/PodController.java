@@ -1,12 +1,7 @@
 package com.vwmin.k8sawd.web.controller;
 
 import com.vwmin.k8sawd.web.model.Response;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.dsl.MixedOperation;
-import io.fabric8.kubernetes.client.dsl.PodResource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,9 +23,16 @@ public class PodController {
     }
 
     @GetMapping("/pods")
-    public ResponseEntity<Response> pods(){
+    public ResponseEntity<Response> pods() {
 
         return Response.success(kubernetesClient.pods().list());
+    }
+
+    @GetMapping("/clear")
+    public ResponseEntity<Response> clear() {
+
+        return Response.success(kubernetesClient.apps().deployments().delete() &&
+                kubernetesClient.services().delete());
     }
 
 }
