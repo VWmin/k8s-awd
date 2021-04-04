@@ -46,3 +46,20 @@ Content-Type: application/json
 
 ### 查
 GET http://{{hostname}}/manager/teams
+
+
+
+//Pod
+
+### 清理资源
+GET http://{{hostname}}/manager/clear
+
+
+
+//Flag
+
+### 提交flag
+POST http://{{hostname}}/flag
+Content-Type: application/json
+
+{"flag": "test"}
