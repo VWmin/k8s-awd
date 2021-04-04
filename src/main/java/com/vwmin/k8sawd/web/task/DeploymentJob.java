@@ -75,7 +75,7 @@ public class DeploymentJob implements Job {
                 .withNewSpec()
                     .addToSelector("app", appName)
                     .withNewType("NodePort") //指定宿主机上绑定端口
-                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
+                    .withPorts(new ServicePortBuilder().withName("service-entry").withPort(80).withNewTargetPort(80).build())
 //                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
                 .endSpec()
 

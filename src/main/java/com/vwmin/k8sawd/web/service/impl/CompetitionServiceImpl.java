@@ -39,6 +39,8 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private final Scheduler scheduler;
     private final KubernetesClient client;
 
+    private int currentCompetition = -1;
+
     public CompetitionServiceImpl(SystemService systemService, TeamService teamService, FlagService flagService,
                                   Scheduler scheduler, KubernetesClient client) {
         this.systemService = systemService;
@@ -61,6 +63,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         // 写入记录，并设置为alive
         save(competition);
 //        systemService.setCompetition(competition);
+        currentCompetition = competition.getId();
 
 
         List<Team> teams = teamService.list();
@@ -72,6 +75,12 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         setFlagTask(competition, teams);
 
 
+    }
+
+    @Override
+    public int runningCompetition() {
+        // fixme
+        return currentCompetition;
     }
 
     private void setFlagTask(Competition competition, List<Team> teams) throws SchedulerException {

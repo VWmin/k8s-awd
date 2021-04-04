@@ -54,6 +54,9 @@ GET http://{{hostname}}/manager/teams
 ### 清理资源
 GET http://{{hostname}}/manager/clear
 
+### 列出服务入口
+GET http://{{hostname}}/manager/services
+
 
 
 //Flag
