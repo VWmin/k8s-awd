@@ -75,7 +75,7 @@ public class FlagJob implements Job {
                 .writingOutput(out)
                 .writingError(error)
                 .usingListener(new WriteFlagListener(execLatch))
-                .exec("/bin/bash", "-c", "echo " + flagVal + " >> /flag.txt ");
+                .exec("/bin/bash", "-c", "echo " + flagVal + " > /flag.txt ");
 
 
 

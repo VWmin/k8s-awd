@@ -32,7 +32,7 @@ Content-Type: application/json
 }
 
 ### 删
-DELETE http://{{hostname}}/manager/team?id=2
+DELETE http://{{hostname}}/manager/team?id=3
 
 ### 改
 PUT http://{{hostname}}/manager/team

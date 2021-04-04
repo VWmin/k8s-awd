@@ -56,8 +56,8 @@ public class DeploymentJob implements Job {
                         .endMetadata()
                         .withNewSpec()
                             .addNewContainer()
-                                .withName("nginx")
-                                .withImage("nginx")
+                                .withName("awd-docker")
+                                .withImage("awd:1.0")
                                 .withPorts(new ContainerPortBuilder().withContainerPort(80).build())
                             .endContainer()
                         .endSpec()
@@ -74,9 +74,9 @@ public class DeploymentJob implements Job {
                 .endMetadata()
                 .withNewSpec()
                     .addToSelector("app", appName)
-//                    .withNewType("NodePort") 指定宿主机上绑定端口
-//                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).withNodePort(32333).build())
-                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
+                    .withNewType("NodePort") //指定宿主机上绑定端口
+                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).withNodePort(32000).build())
+//                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
                 .endSpec()
 
                 .build()
