@@ -1,6 +1,7 @@
 package com.vwmin.k8sawd.web.task;
 
 import com.vwmin.k8sawd.web.entity.Flag;
+import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.service.FlagService;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -14,6 +15,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -33,10 +35,13 @@ public class FlagJob implements Job {
         KubernetesClient client = (KubernetesClient) jobDataMap.get("client");
         FlagService flagService = (FlagService) jobDataMap.get("flagService");
         Integer competitionId = (Integer) jobDataMap.get("competitionId");
-        Integer teamId = (Integer) jobDataMap.get("teamId");
+        @SuppressWarnings("unchecked")
+        List<Team> teams = (List<Team>) jobDataMap.get("teams");
 
         try {
-            newFlag(client, flagService, genAppName(competitionId, teamId), teamId);
+            for (Team team : teams){
+                newFlag(client, flagService, competitionId, team.getId());
+            }
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             ie.printStackTrace();
@@ -44,8 +49,9 @@ public class FlagJob implements Job {
     }
 
     private void newFlag(KubernetesClient client, FlagService flagService,
-                         String appName, int teamId) throws InterruptedException {
+                         int competitionId, int teamId) throws InterruptedException {
 
+        String appName = genAppName(competitionId, teamId);
 
 
         log.info("正在等待Deployment[{}-deployment]准备完毕，将在2min后超时", appName);

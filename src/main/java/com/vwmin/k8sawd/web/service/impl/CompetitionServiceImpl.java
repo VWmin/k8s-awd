@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
+import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.exception.RoutineException;
 import com.vwmin.k8sawd.web.mapper.CompetitionMapper;
 import com.vwmin.k8sawd.web.model.ResponseCode;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author vwmin
@@ -60,22 +62,24 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         save(competition);
 //        systemService.setCompetition(competition);
 
-        // 设置启动比赛的定时任务
-        setDeploymentTask(competition);
 
-        // 设置更新flag的定时任务 fixme 这里随便找了一个team做测试
-        setFlagTask(competition, 2);
+        List<Team> teams = teamService.list();
+
+        // 设置启动比赛的定时任务
+        setDeploymentTask(competition, teams);
+
+        // 设置更新flag的定时任务
+        setFlagTask(competition, teams);
 
 
     }
 
-    private void setFlagTask(Competition competition, int teamId) throws SchedulerException {
-        JobDetail job = JobBuilder.newJob(FlagJob.class)
-                .usingJobData("competitionId", competition.getId())
-                .usingJobData("teamId", teamId)
-                .build();
+    private void setFlagTask(Competition competition, List<Team> teams) throws SchedulerException {
+        JobDetail job = JobBuilder.newJob(FlagJob.class).build();
         job.getJobDataMap().put("client", client);
         job.getJobDataMap().put("flagService", flagService);
+        job.getJobDataMap().put("competitionId", competition.getId());
+        job.getJobDataMap().put("teams", teams);
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
                 .startAt(localDateTime2Date(LocalDateTimeUtil.now().plusSeconds(5)))
@@ -89,12 +93,12 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         scheduler.scheduleJob(job, trigger);
     }
 
-    private void setDeploymentTask(Competition competition) throws SchedulerException {
+    private void setDeploymentTask(Competition competition, List<Team> teams) throws SchedulerException {
         JobDetail job = JobBuilder.newJob(DeploymentJob.class).build();
         // 传入k8s命令环境
         job.getJobDataMap().put("client", client);
         // 传入要启动的队伍信息
-        job.getJobDataMap().put("teams", teamService.list());
+        job.getJobDataMap().put("teams", teams);
         // 传入当前比赛id
         job.getJobDataMap().put("competitionId", competition.getId());
 
