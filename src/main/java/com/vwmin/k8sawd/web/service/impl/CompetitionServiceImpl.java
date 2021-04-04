@@ -82,7 +82,8 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
                 .endAt(localDateTime2Date(competition.getEndTime()))
                 .withSchedule(
                         SimpleScheduleBuilder.simpleSchedule()
-                                .withIntervalInMinutes(20)
+                                .withIntervalInMinutes(1)
+                                .repeatForever()
                 ).build();
 
         scheduler.scheduleJob(job, trigger);
