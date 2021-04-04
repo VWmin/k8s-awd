@@ -8,6 +8,7 @@ import com.vwmin.k8sawd.web.exception.RoutineException;
 import com.vwmin.k8sawd.web.mapper.CompetitionMapper;
 import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.CompetitionService;
+import com.vwmin.k8sawd.web.service.FlagService;
 import com.vwmin.k8sawd.web.service.SystemService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import com.vwmin.k8sawd.web.task.DeploymentJob;
@@ -32,13 +33,15 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     private final SystemService systemService;
     private final TeamService teamService;
+    private final FlagService flagService;
     private final Scheduler scheduler;
     private final KubernetesClient client;
 
-    public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
+    public CompetitionServiceImpl(SystemService systemService, TeamService teamService, FlagService flagService,
                                   Scheduler scheduler, KubernetesClient client) {
         this.systemService = systemService;
         this.teamService = teamService;
+        this.flagService = flagService;
         this.scheduler = scheduler;
         this.client = client;
     }
@@ -72,6 +75,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
                 .usingJobData("teamId", teamId)
                 .build();
         job.getJobDataMap().put("client", client);
+        job.getJobDataMap().put("flagService", flagService);
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
                 .startAt(localDateTime2Date(LocalDateTimeUtil.now().plusSeconds(5)))
