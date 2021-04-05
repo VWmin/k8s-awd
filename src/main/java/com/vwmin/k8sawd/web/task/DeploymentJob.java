@@ -3,6 +3,8 @@ package com.vwmin.k8sawd.web.task;
 import com.vwmin.k8sawd.web.entity.Team;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
+import io.fabric8.kubernetes.api.model.networking.v1beta1.Ingress;
+import io.fabric8.kubernetes.api.model.networking.v1beta1.IngressBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
@@ -74,9 +76,28 @@ public class DeploymentJob implements Job {
                 .endMetadata()
                 .withNewSpec()
                     .addToSelector("app", appName)
-                    .withNewType("NodePort") //指定宿主机上绑定端口
-                    .withPorts(new ServicePortBuilder().withName("service-entry").withPort(80).withNewTargetPort(80).build())
+//                    .withNewType("NodePort") //指定宿主机上绑定端口
+                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
 //                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
+                .endSpec()
+
+                .build()
+        );
+
+        // 创建一个Ingress试试
+        client.network().ingresses().create(new IngressBuilder()
+                .withNewMetadata()
+                    .withName(appName + "-ingress")
+                    .addToAnnotations("nginx.ingress.kubernetes.io/rewrite-target", "/$2")
+                .endMetadata()
+                .withNewSpec()
+                    .addNewRule()
+                    .withNewHttp()
+                    .addNewPath()
+                    .withPath("/" + appName + "(/|$)(.*)").withNewBackend().withServiceName(appName + "-service").withServicePort(new IntOrString(80)).endBackend()
+                    .endPath()
+                    .endHttp()
+                    .endRule()
                 .endSpec()
 
                 .build()

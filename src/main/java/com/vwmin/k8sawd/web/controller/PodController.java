@@ -42,8 +42,11 @@ public class PodController {
     @GetMapping("/clear")
     public ResponseEntity<Response> clear() {
 
-        return Response.success(kubernetesClient.apps().deployments().delete() &&
-                kubernetesClient.services().delete());
+        return Response.success(
+                kubernetesClient.apps().deployments().delete() &&
+                kubernetesClient.services().delete() &&
+                kubernetesClient.network().ingresses().delete()
+        );
     }
 
     @GetMapping("/services")
@@ -58,9 +61,8 @@ public class PodController {
         Map<String, String> ret = new HashMap<>(teams.size());
 
         for (Team team : teams) {
-            String serviceName = "awd-" + competitionId + "-" + team.getId() + "-service";
-            String serviceEntry = kubernetesClient.services().withName(serviceName).getURL("service-entry");
-            ret.put("队伍" + team.getId() + "服务入口", serviceEntry);
+            String appName = "awd-" + competitionId + "-" + team.getId();
+            ret.put("队伍" + team.getId() + "服务入口", "http://121.36.230.118:30232/" + appName + "/");
         }
 
         return Response.success(ret);
