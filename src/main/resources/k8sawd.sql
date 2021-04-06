@@ -60,12 +60,12 @@ CREATE TABLE `flag`
 DROP TABLE IF EXISTS `sys`;
 CREATE TABLE `sys`
 (
-    `id`             int        NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `created_at`     datetime   NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updated_at`     datetime COMMENT '更新时间',
+    `id`         int          NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `created_at` datetime     NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` datetime COMMENT '更新时间',
 
-    `competition_id` int        NOT NULL DEFAULT 0 COMMENT '比赛id',
-    `is_alive`       tinyint(1) NOT NULL DEFAULT false COMMENT '比赛是否激活',
+    `sys_key`        varchar(255) NOT NULL DEFAULT '' COMMENT '配置key',
+    `sys_value`      varchar(255) NOT NULL DEFAULT '' COMMENT '配置value',
 
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB

@@ -22,7 +22,7 @@ public class Flag extends BaseEntity{
 
     private Integer usedBy;
 
-    public Flag(String value, Integer belongTo){
+    public Flag(Integer belongTo, String value){
         this.value = value;
         this.belongTo = belongTo;
         this.isUsed = false;

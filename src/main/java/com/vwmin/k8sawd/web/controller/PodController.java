@@ -1,6 +1,7 @@
 package com.vwmin.k8sawd.web.controller;
 
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.CompetitionService;
 import com.vwmin.k8sawd.web.service.TeamService;
@@ -24,12 +25,12 @@ import java.util.Map;
 public class PodController {
 
     private final KubernetesClient kubernetesClient;
-    private final CompetitionService competitionService;
+    private final CompetitionHandler competitionHandler;
     private final TeamService teamService;
 
-    public PodController(KubernetesClient kubernetesClient, CompetitionService competitionService, TeamService teamService) {
+    public PodController(KubernetesClient kubernetesClient, CompetitionHandler competitionHandler, TeamService teamService) {
         this.kubernetesClient = kubernetesClient;
-        this.competitionService = competitionService;
+        this.competitionHandler = competitionHandler;
         this.teamService = teamService;
     }
 
@@ -51,11 +52,11 @@ public class PodController {
 
     @GetMapping("/services")
     public ResponseEntity<Response> services() {
-        int competitionId = competitionService.runningCompetition();
-        if (competitionId == -1){
+        if (!competitionHandler.isRunning()){
             // 没有正在进行的比赛
             return Response.error();
         }
+        int competitionId = competitionHandler.getRunningCompetition().getId();
         List<Team> teams = teamService.list();
 
         Map<String, String> ret = new HashMap<>(teams.size());

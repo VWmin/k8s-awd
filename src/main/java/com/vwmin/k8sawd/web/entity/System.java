@@ -14,8 +14,20 @@ import lombok.EqualsAndHashCode;
 @TableName("sys")
 public class System extends BaseEntity{
 
-    private Integer competitionId;
+    public static final String KEY_RUNNING_COMPETITION = "runningCompetition";
+    public static final String VAL_NULL = "null";
 
-    private Boolean isAlive;
+    // 必须被初始化的配置项
+    public static final String[] NECESSARY_CONF = {KEY_RUNNING_COMPETITION};
 
+    private String sysKey;
+
+    private String sysValue;
+
+    public System(String sysKey, String sysValue) {
+        this.sysKey = sysKey;
+        this.sysValue = sysValue;
+    }
+
+    public System(){}
 }

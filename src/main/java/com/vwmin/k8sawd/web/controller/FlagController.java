@@ -1,13 +1,12 @@
 package com.vwmin.k8sawd.web.controller;
 
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.FlagService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author vwmin
@@ -18,23 +17,31 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class FlagController {
 
-    private final FlagService flagService;
+    private final CompetitionHandler competitionHandler;
 
 
-    public FlagController(FlagService flagService) {
-        this.flagService = flagService;
+    public FlagController(CompetitionHandler competitionHandler) {
+        this.competitionHandler = competitionHandler;
     }
 
     @PostMapping("/flag")
     public ResponseEntity<Response> receiveFlag(@RequestBody FlagJson flag){
 
-        log.info("flag: {}", flag.getFlag());
+        log.info("flag: {}", flag);
 
-        return Response.success();
+
+
+        return Response.success(competitionHandler.validFlag(flag.teamId, flag.flag));
+    }
+
+    @GetMapping("/flag")
+    public ResponseEntity<Response> getFlag(@RequestParam int teamId){
+        return Response.success(competitionHandler.getFlagByTeamId(teamId));
     }
 
     @Data
     private static class FlagJson {
+        private int teamId;
         private String flag;
     }
 

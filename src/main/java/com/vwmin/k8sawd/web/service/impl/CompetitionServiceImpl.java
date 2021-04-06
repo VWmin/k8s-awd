@@ -2,11 +2,13 @@ package com.vwmin.k8sawd.web.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.hutool.core.lang.Pair;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.exception.RoutineException;
 import com.vwmin.k8sawd.web.mapper.CompetitionMapper;
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.CompetitionService;
 import com.vwmin.k8sawd.web.service.FlagService;
@@ -35,25 +37,28 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     private final SystemService systemService;
     private final TeamService teamService;
-    private final FlagService flagService;
     private final Scheduler scheduler;
     private final KubernetesClient client;
+    private final CompetitionHandler competitionHandler;
 
-    private int currentCompetition = -1;
-
-    public CompetitionServiceImpl(SystemService systemService, TeamService teamService, FlagService flagService,
-                                  Scheduler scheduler, KubernetesClient client) {
+    public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
+                                  Scheduler scheduler, KubernetesClient client, CompetitionHandler competitionHandler) {
         this.systemService = systemService;
         this.teamService = teamService;
-        this.flagService = flagService;
         this.scheduler = scheduler;
         this.client = client;
+        this.competitionHandler = competitionHandler;
+
+        Pair<Boolean, Integer> pair = systemService.runningCompetition();
+        if (pair.getKey()) {
+            competitionHandler.setRunningCompetition(getById(pair.getValue()));
+        }
     }
 
     @Override
     public void createCompetition(Competition competition) throws SchedulerException {
         // 如果有正在进行的比赛，则创建失败
-        if (systemService.hasAlive()) {
+        if (competitionHandler.isRunning()) {
             throw new RoutineException(ResponseCode.FAIL, "已有正在进行的比赛");
         }
 
@@ -62,31 +67,28 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
         // 写入记录，并设置为alive
         save(competition);
-//        systemService.setCompetition(competition);
-        currentCompetition = competition.getId();
+        systemService.setCompetition(competition);
+        competitionHandler.setRunningCompetition(competition);
 
 
         List<Team> teams = teamService.list();
 
         // 设置启动比赛的定时任务
-        setDeploymentTask(competition, teams);
+        setDeploymentTask(teams);
 
         // 设置更新flag的定时任务
-        setFlagTask(competition, teams);
+        setFlagTask(teams);
 
 
     }
 
-    @Override
-    public int runningCompetition() {
-        // fixme
-        return currentCompetition;
-    }
 
-    private void setFlagTask(Competition competition, List<Team> teams) throws SchedulerException {
+
+    private void setFlagTask(List<Team> teams) throws SchedulerException {
+        Competition competition = competitionHandler.getRunningCompetition();
         JobDetail job = JobBuilder.newJob(FlagJob.class).build();
         job.getJobDataMap().put("client", client);
-        job.getJobDataMap().put("flagService", flagService);
+        job.getJobDataMap().put("competitionHandler", competitionHandler);
         job.getJobDataMap().put("competitionId", competition.getId());
         job.getJobDataMap().put("teams", teams);
 
@@ -102,7 +104,8 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         scheduler.scheduleJob(job, trigger);
     }
 
-    private void setDeploymentTask(Competition competition, List<Team> teams) throws SchedulerException {
+    private void setDeploymentTask(List<Team> teams) throws SchedulerException {
+        Competition competition = competitionHandler.getRunningCompetition();
         JobDetail job = JobBuilder.newJob(DeploymentJob.class).build();
         // 传入k8s命令环境
         job.getJobDataMap().put("client", client);

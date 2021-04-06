@@ -1,15 +1,17 @@
 package com.vwmin.k8sawd.web.service.impl;
 
 import cn.hutool.core.lang.Pair;
+import cn.hutool.core.util.NumberUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.System;
 import com.vwmin.k8sawd.web.mapper.SystemMapper;
-import com.vwmin.k8sawd.web.service.CompetitionService;
 import com.vwmin.k8sawd.web.service.SystemService;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author vwmin
@@ -20,49 +22,56 @@ import org.springframework.stereotype.Service;
 public class SystemServiceImpl extends ServiceImpl<SystemMapper, System> implements SystemService {
 
 
+    /**
+     * 初始化一些必须要被初始化的配置项，如果不存在
+     */
+    @PostConstruct
+    private void init() {
+        for (String item : System.NECESSARY_CONF) {
+            if (!exist(item)) {
+                put(item, System.VAL_NULL);
+            }
+        }
+    }
+
+
     @Override
     public Pair<Boolean, Integer> runningCompetition() {
-        // 如果不存在alive的比赛，返回false
-        if (!hasAlive()) {
-            return new Pair<>(false, null);
-        }
+        LambdaQueryWrapper<System> condition = new LambdaQueryWrapper<>();
+        condition.eq(System::getSysKey, System.KEY_RUNNING_COMPETITION);
+        String val = getOne(condition).getSysValue();
 
-        // 找到alive的比赛并返回
-        return new Pair<>(true, getAlive());
+        return NumberUtil.isInteger(val)
+                ? new Pair<>(true, Integer.parseInt(val))
+                : new Pair<>(false, -1);
     }
 
     @Override
     public void setCompetition(Competition competition) {
-        // 如果已经存在alive的比赛，则什么都不做
-        if (hasAlive()) {
-            return;
-        }
-
-        // 否则记录传入的比赛，并设置为alive
-        System record = new System();
-        record.setCompetitionId(competition.getId());
-        record.setIsAlive(true);
-
-        save(record);
-    }
-
-    @Override
-    public boolean hasAlive() {
-        LambdaQueryWrapper<System> condition = new LambdaQueryWrapper<>();
-        condition.eq(System::getIsAlive, true);
-        return count(condition) == 1;
+        // 将正在进行的比赛设置为传入的参数
+        put(System.KEY_RUNNING_COMPETITION, competition.getId().toString());
     }
 
     @Override
     public void finishAll() {
-        LambdaUpdateWrapper<System> condition = new LambdaUpdateWrapper<>();
-        condition.set(System::getIsAlive, false);
-        update(condition);
+        put(System.KEY_RUNNING_COMPETITION, System.VAL_NULL);
     }
 
-    private Integer getAlive() {
-        LambdaQueryWrapper<System> condition = new LambdaQueryWrapper<>();
-        condition.eq(System::getIsAlive, true);
-        return getOne(condition).getCompetitionId();
+    /**
+     * fixme: 不检查是否存在key，所以给定的key必须存在
+     */
+    @Override
+    public void put(String key, String value) {
+        LambdaUpdateWrapper<System> condition = new LambdaUpdateWrapper<>();
+        condition.eq(System::getSysKey, key);
+        saveOrUpdate(new System(key, value), condition);
     }
+
+    private boolean exist(String key) {
+        LambdaUpdateWrapper<System> condition = new LambdaUpdateWrapper<>();
+        condition.eq(System::getSysKey, key);
+        return count(condition) > 0;
+    }
+
+
 }

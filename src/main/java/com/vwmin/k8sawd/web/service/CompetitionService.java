@@ -17,6 +17,4 @@ public interface CompetitionService extends IService<Competition> {
      * @param competition 要创建的比赛模板
      */
     void createCompetition(Competition competition) throws SchedulerException;
-
-    int runningCompetition();
 }

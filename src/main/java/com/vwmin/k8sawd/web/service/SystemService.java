@@ -27,16 +27,17 @@ public interface SystemService extends IService<System> {
 
 
     /**
-     * 检查是否存在正在进行的比赛
-     * @return 检查结果
-     */
-    boolean hasAlive();
-
-
-    /**
      * 将所有比赛设置为false，开发用
      */
     void finishAll();
+
+
+    /**
+     * 创建或更新一条配置
+     * @param key key
+     * @param val val
+     */
+    void put(String key, String val);
 
 
 }

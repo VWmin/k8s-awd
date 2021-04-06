@@ -2,6 +2,7 @@ package com.vwmin.k8sawd.web.task;
 
 import com.vwmin.k8sawd.web.entity.Flag;
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.service.FlagService;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -33,14 +34,17 @@ public class FlagJob implements Job {
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
 
         KubernetesClient client = (KubernetesClient) jobDataMap.get("client");
-        FlagService flagService = (FlagService) jobDataMap.get("flagService");
+        CompetitionHandler competitionHandler = (CompetitionHandler) jobDataMap.get("competitionHandler");
         Integer competitionId = (Integer) jobDataMap.get("competitionId");
         @SuppressWarnings("unchecked")
         List<Team> teams = (List<Team>) jobDataMap.get("teams");
 
+        // 记录并清理原本的flag
+        competitionHandler.flushFlag();
+
         try {
             for (Team team : teams){
-                newFlag(client, flagService, competitionId, team.getId());
+                newFlag(client, competitionHandler, competitionId, team.getId());
             }
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
@@ -48,7 +52,7 @@ public class FlagJob implements Job {
         }
     }
 
-    private void newFlag(KubernetesClient client, FlagService flagService,
+    private void newFlag(KubernetesClient client, CompetitionHandler competitionHandler,
                          int competitionId, int teamId) throws InterruptedException {
 
         String appName = genAppName(competitionId, teamId);
@@ -91,9 +95,8 @@ public class FlagJob implements Job {
             // 执行失败
             log.warn("已超时，写入未能在指定时间内结束. err: {}", error);
         } else{
-            // 写入Pod成功后将flag写入数据库
-            Flag flag = new Flag(flagVal, teamId);
-            flagService.save(flag);
+            // 写入Pod成功后向competitionHandler更新队伍flag
+            competitionHandler.updateFlag(teamId, flagVal);
         }
 
         execWatch.close();
