@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -49,6 +50,10 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         this.client = client;
         this.competitionHandler = competitionHandler;
 
+    }
+
+    @PostConstruct
+    public void init(){
         Pair<Boolean, Integer> pair = systemService.runningCompetition();
         if (pair.getKey()) {
             competitionHandler.setRunningCompetition(getById(pair.getValue()));
@@ -82,6 +87,16 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     }
 
+    @Override
+    public Pair<Boolean, Integer> runningCompetition() {
+        return systemService.runningCompetition();
+    }
+
+    @Override
+    public void finishAll() {
+        systemService.finishAll();
+        competitionHandler.setRunningCompetition(null);
+    }
 
 
     private void setFlagTask(List<Team> teams) throws SchedulerException {

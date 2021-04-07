@@ -74,12 +74,14 @@ public class CompetitionHandler {
      * @return 本次提交是否成功
      */
     public boolean validFlag(int teamId, String flagVal) {
+        // 检查是不是一个flag
         if (!flagMap.containsKey(flagVal)) {
             return false;
         }
 
 
         Flag flag = flagMap.get(flagVal);
+        // 检查是否已使用或是自己队伍的flag
         if (flag.isUsed() || flag.getBelongTo().equals(teamId)) {
             return false;
         } else {

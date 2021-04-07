@@ -21,29 +21,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/manager")
 public class SystemController {
 
-    private final SystemService systemService;
     private final CompetitionService competitionService;
 
-    public SystemController(SystemService systemService, CompetitionService competitionService) {
-        this.systemService = systemService;
+    public SystemController(CompetitionService competitionService) {
         this.competitionService = competitionService;
     }
 
 
     @GetMapping("/system/runningCompetition")
     public ResponseEntity<Response> getRunningCompetition() {
-        Pair<Boolean, Integer> pair = systemService.runningCompetition();
-        if (pair.getKey()) {
-            return Response.success(competitionService.getById(pair.getValue()));
-        } else {
-            return Response.success("没有找到正在进行中的比赛");
-        }
+        Pair<Boolean, Integer> pair = competitionService.runningCompetition();
+
+        return pair.getKey()
+                ? Response.success(competitionService.getById(pair.getValue()))
+                : Response.success("没有找到正在进行中的比赛");
     }
 
     @DeleteMapping("/system/competition")
-    public ResponseEntity<Response> finishAll(){
+    public ResponseEntity<Response> finishAll() {
 
-        systemService.finishAll();
+        competitionService.finishAll();
 
         return Response.success();
     }

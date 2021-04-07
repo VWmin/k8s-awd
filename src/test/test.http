@@ -65,7 +65,7 @@ GET http://{{hostname}}/manager/services
 POST http://{{hostname}}/flag
 Content-Type: application/json
 
-{"flag": "e13f77cc-2159-4115-ab9c-b18ce0b52118", "team": 2}
+{"flag": "321cd9db-01aa-4b4e-8bdb-85ed4329d6e6", "team": 2}
 
 ### 获取一个flag
-GET http://{{hostname}}/flag?teamId=4
+GET http://{{hostname}}/flag?teamId=2

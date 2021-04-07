@@ -1,5 +1,6 @@
 package com.vwmin.k8sawd.web.service;
 
+import cn.hutool.core.lang.Pair;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.vwmin.k8sawd.web.entity.Competition;
 import org.quartz.SchedulerException;
@@ -17,4 +18,9 @@ public interface CompetitionService extends IService<Competition> {
      * @param competition 要创建的比赛模板
      */
     void createCompetition(Competition competition) throws SchedulerException;
+
+    Pair<Boolean, Integer> runningCompetition();
+
+    void finishAll();
+
 }

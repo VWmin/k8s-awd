@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.System;
 import com.vwmin.k8sawd.web.mapper.SystemMapper;
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.service.SystemService;
 import org.springframework.stereotype.Service;
 
