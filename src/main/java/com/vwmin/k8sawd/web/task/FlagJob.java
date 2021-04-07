@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 以（比赛，队伍）为元组，定时向pod插入一条flag
+ *
  * @author vwmin
  * @version 1.0
  * @date 2021/4/3 20:35
@@ -40,10 +41,10 @@ public class FlagJob implements Job {
         List<Team> teams = (List<Team>) jobDataMap.get("teams");
 
         // 记录并清理原本的flag
-        competitionHandler.flushFlag();
+        competitionHandler.roundCheck();
 
         try {
-            for (Team team : teams){
+            for (Team team : teams) {
                 newFlag(client, competitionHandler, competitionId, team.getId());
             }
         } catch (InterruptedException ie) {
@@ -88,13 +89,12 @@ public class FlagJob implements Job {
                 .exec("/bin/bash", "-c", "echo " + flagVal + " > /flag.txt ");
 
 
-
         // 等待执行结束
         boolean latchTerminationStatus = execLatch.await(5, TimeUnit.SECONDS);
         if (!latchTerminationStatus) {
             // 执行失败
             log.warn("已超时，写入未能在指定时间内结束. err: {}", error);
-        } else{
+        } else {
             // 写入Pod成功后向competitionHandler更新队伍flag
             competitionHandler.updateFlag(teamId, flagVal);
         }
@@ -110,7 +110,7 @@ public class FlagJob implements Job {
     private static class WriteFlagListener implements ExecListener {
         private final CountDownLatch execLatch;
 
-        public WriteFlagListener(CountDownLatch execLatch){
+        public WriteFlagListener(CountDownLatch execLatch) {
             this.execLatch = execLatch;
         }
 

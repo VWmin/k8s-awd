@@ -1,21 +1,26 @@
 package com.vwmin.k8sawd.web.model;
 
-import cn.hutool.core.lang.Pair;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.Flag;
+import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.service.FlagService;
-import com.vwmin.k8sawd.web.service.SystemService;
+import com.vwmin.k8sawd.web.service.TeamService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author vwmin
  * @version 1.0
  * @date 2021/4/6 19:24
  */
+@Slf4j
 @Component
 public class CompetitionHandler {
 
@@ -23,10 +28,12 @@ public class CompetitionHandler {
     private Competition runningCompetition;
     private final ConcurrentHashMap<String, Flag> flagMap;
     private final FlagService flagService;
+    private final TeamService teamService;
 
 
-    public CompetitionHandler(FlagService flagService) {
+    public CompetitionHandler(FlagService flagService, TeamService teamService) {
         this.flagService = flagService;
+        this.teamService = teamService;
         runningCompetition = null;
         flagMap = new ConcurrentHashMap<>();
     }
@@ -44,14 +51,36 @@ public class CompetitionHandler {
     }
 
     /**
+     * 统计上轮得分
      * 将所有队伍的flag设为expired，并写入数据库
      */
-    public void flushFlag() {
+    public void roundCheck() {
         if (!flagMap.isEmpty()){
-            Collection<Flag> values = flagMap.values();
-            flagService.saveBatch(values);
-            flagMap.clear();
+            statistic();
+            flushFlag();
         }
+    }
+
+    private void statistic(){
+        Map<Integer, List<Flag>> collect = flagMap.values().stream().filter(Flag::isUsed)
+                .collect(Collectors.groupingBy(Flag::getUsedBy));
+        int baseScore = runningCompetition.getScore();
+        collect.forEach((k, v) -> {
+            int plusScore = baseScore*v.size();
+
+            // 向数据库写入得分
+            Team team = teamService.getById(k);
+            team.plusScore(plusScore);
+            teamService.updateById(team);
+
+            log.info("队伍{}，本轮得分：{}", k, plusScore);
+        });
+    }
+
+    public void flushFlag() {
+        Collection<Flag> values = flagMap.values();
+        flagService.saveBatch(values);
+        flagMap.clear();
     }
 
     /**

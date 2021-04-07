@@ -5,7 +5,6 @@ GET http://{{hostname}}/manager/system/runningCompetition
 
 
 ### 创建一个比赛，如果成功会被设置为alive
-
 POST http://{{hostname}}/manager/competition
 Content-Type: application/json
 
@@ -15,8 +14,11 @@ Content-Type: application/json
   "score": 100
 }
 
-### 将所有比赛置为停止
 
+### 查询rank
+GET http://{{hostname}}/manager/competition/rank
+
+### 将所有比赛置为停止
 DELETE http://{{hostname}}/manager/system/competition
 
 
@@ -65,7 +67,10 @@ GET http://{{hostname}}/manager/services
 POST http://{{hostname}}/flag
 Content-Type: application/json
 
-{"flag": "321cd9db-01aa-4b4e-8bdb-85ed4329d6e6", "team": 2}
+{
+  "flag": "e2a3f67f-0145-44fa-ba64-0eaa7aebbe1d",
+  "teamId": 1
+}
 
 ### 获取一个flag
 GET http://{{hostname}}/flag?teamId=2

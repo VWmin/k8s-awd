@@ -17,4 +17,10 @@ public class Team extends BaseEntity{
     private String name;
 
     private String logo;
+
+    private Integer score;
+
+    public void plusScore(int score){
+        this.score += score;
+    }
 }

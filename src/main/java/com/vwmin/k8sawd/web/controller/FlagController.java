@@ -26,11 +26,6 @@ public class FlagController {
 
     @PostMapping("/flag")
     public ResponseEntity<Response> receiveFlag(@RequestBody FlagJson flag){
-
-        log.info("flag: {}", flag);
-
-
-
         return Response.success(competitionHandler.validFlag(flag.teamId, flag.flag));
     }
 
