@@ -4,6 +4,7 @@ import com.vwmin.k8sawd.web.entity.Flag;
 import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.service.FlagService;
+import com.vwmin.k8sawd.web.service.TeamService;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.ExecListener;
@@ -37,8 +38,7 @@ public class FlagJob implements Job {
         KubernetesClient client = (KubernetesClient) jobDataMap.get("client");
         CompetitionHandler competitionHandler = (CompetitionHandler) jobDataMap.get("competitionHandler");
         Integer competitionId = (Integer) jobDataMap.get("competitionId");
-        @SuppressWarnings("unchecked")
-        List<Team> teams = (List<Team>) jobDataMap.get("teams");
+        List<Team> teams = ((TeamService) jobDataMap.get("teamService")).teamsByCompetition(competitionId);
 
         // 记录并清理原本的flag
         competitionHandler.roundCheck();

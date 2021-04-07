@@ -30,11 +30,7 @@ public class SystemController {
 
     @GetMapping("/system/runningCompetition")
     public ResponseEntity<Response> getRunningCompetition() {
-        Pair<Boolean, Integer> pair = competitionService.runningCompetition();
-
-        return pair.getKey()
-                ? Response.success(competitionService.getById(pair.getValue()))
-                : Response.success("没有找到正在进行中的比赛");
+        return Response.success(competitionService.runningCompetition());
     }
 
     @DeleteMapping("/system/competition")

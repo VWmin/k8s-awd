@@ -43,7 +43,7 @@ public class CompetitionController {
 
     @GetMapping("/competition/rank")
     public ResponseEntity<Response> rank(){
-        List<Team> teams = teamService.list();
+        List<Team> teams = teamService.teamsByCompetition(competitionService.runningCompetition());
         teams.sort(Comparator.comparing(Team::getScore).reversed());
 
         return Response.success(teams);

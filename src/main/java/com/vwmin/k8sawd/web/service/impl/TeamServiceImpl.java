@@ -1,6 +1,8 @@
 package com.vwmin.k8sawd.web.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.exception.RoutineException;
@@ -8,6 +10,8 @@ import com.vwmin.k8sawd.web.mapper.TeamMapper;
 import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.TeamService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author vwmin
@@ -26,6 +30,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
     public void editTeam(Team team) {
         emptyCheck(team);
         updateById(team);
+    }
+
+    @Override
+    public List<Team> teamsByCompetition(int competitionId) {
+        LambdaUpdateWrapper<Team> condition = new LambdaUpdateWrapper<>();
+        condition.eq(Team::getCompetitionId, competitionId  );
+        return list(condition);
     }
 
     private void emptyCheck(Team team) {

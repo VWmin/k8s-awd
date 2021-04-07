@@ -1,6 +1,7 @@
 package com.vwmin.k8sawd.web.task;
 
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.service.TeamService;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1beta1.Ingress;
@@ -25,16 +26,13 @@ public class DeploymentJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) {
-        log.info("定时任务测试.");
-
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
-
         KubernetesClient client = (KubernetesClient) jobDataMap.get("client");
-
-        @SuppressWarnings("unchecked")
-        List<Team> teams = (List<Team>) jobDataMap.get("teams");
-
         Integer competitionId = (Integer) jobDataMap.get("competitionId");
+        List<Team> teams = ((TeamService) jobDataMap.get("teamService")).teamsByCompetition(competitionId);
+
+        log.info("正在为比赛{}创建deploy，共计{}", competitionId, teams.size());
+
 
         for (Team team : teams){
             deploy(client, genAppName(competitionId, team));

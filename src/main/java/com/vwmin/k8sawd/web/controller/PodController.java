@@ -3,6 +3,7 @@ package com.vwmin.k8sawd.web.controller;
 import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
+import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.CompetitionService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -54,16 +55,21 @@ public class PodController {
     public ResponseEntity<Response> services() {
         if (!competitionHandler.isRunning()){
             // 没有正在进行的比赛
-            return Response.error();
+            return Response.error(ResponseCode.FAIL, "没有正在进行的比赛");
         }
         int competitionId = competitionHandler.getRunningCompetition().getId();
-        List<Team> teams = teamService.list();
+        List<Team> teams = teamService.teamsByCompetition(competitionId);
 
         Map<String, String> ret = new HashMap<>(teams.size());
 
         for (Team team : teams) {
             String appName = "awd-" + competitionId + "-" + team.getId();
-            ret.put("队伍" + team.getId() + "服务入口", "http://121.36.230.118:30232/" + appName + "/");
+
+            String entry = kubernetesClient.network().ingresses().withName(appName + "-ingress").isReady()
+                    ? "http://121.36.230.118:30232/" + appName + "/"
+                    : "";
+
+            ret.put("队伍" + team.getId() + "服务入口", entry);
         }
 
         return Response.success(ret);

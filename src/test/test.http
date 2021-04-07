@@ -68,9 +68,9 @@ POST http://{{hostname}}/flag
 Content-Type: application/json
 
 {
-  "flag": "e2a3f67f-0145-44fa-ba64-0eaa7aebbe1d",
-  "teamId": 1
+  "flag": "7ece7782-aa71-4466-bc15-fe90421a4781",
+  "teamId": 7
 }
 
 ### 获取一个flag
-GET http://{{hostname}}/flag?teamId=2
+GET http://{{hostname}}/flag?teamId=6

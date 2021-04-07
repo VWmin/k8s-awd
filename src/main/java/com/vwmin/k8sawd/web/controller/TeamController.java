@@ -1,10 +1,10 @@
 package com.vwmin.k8sawd.web.controller;
 
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.TeamService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,8 +20,12 @@ public class TeamController {
     private final
     TeamService teamService;
 
-    public TeamController(TeamService teamService) {
+    // fixme: 创建team时的competitionId应由前端给出
+    private final CompetitionHandler competitionHandler;
+
+    public TeamController(TeamService teamService, CompetitionHandler competitionHandler) {
         this.teamService = teamService;
+        this.competitionHandler = competitionHandler;
     }
 
 
@@ -29,6 +33,7 @@ public class TeamController {
     public ResponseEntity<Response> addTeam(@RequestBody Team team) {
 
         log.info("addTeam: {}", team);
+        team.setCompetitionId(competitionHandler.getRunningCompetition().getId());
         teamService.addTeam(team);
 
         return Response.success();
@@ -56,6 +61,6 @@ public class TeamController {
     @GetMapping("/teams")
     public ResponseEntity<Response> teams() {
 
-        return Response.success(teamService.list());
+        return Response.success(teamService.teamsByCompetition(competitionHandler.getRunningCompetition().getId()));
     }
 }

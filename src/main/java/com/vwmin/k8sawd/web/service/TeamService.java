@@ -3,6 +3,8 @@ package com.vwmin.k8sawd.web.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.vwmin.k8sawd.web.entity.Team;
 
+import java.util.List;
+
 /**
  * @author vwmin
  * @version 1.0
@@ -17,5 +19,7 @@ public interface TeamService extends IService<Team> {
     void addTeam(Team team);
 
     void editTeam(Team team);
+
+    List<Team> teamsByCompetition(int competitionId);
 
 }

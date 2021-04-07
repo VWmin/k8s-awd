@@ -29,6 +29,7 @@ CREATE TABLE `team`
     `name`       varchar(255) NOT NULL DEFAULT '' COMMENT '队伍名称',
     `logo`       varchar(255) NOT NULL DEFAULT 'default.png' COMMENT '指向logo路径',
     `score`      int      NOT NULL DEFAULT 0 COMMENT '分数',
+    `competition_id`    int          NULL     DEFAULT NULL COMMENT '队伍所属的比赛id',
 
 
     PRIMARY KEY (`id`)

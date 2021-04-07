@@ -1,5 +1,7 @@
 package com.vwmin.k8sawd.web.model;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.Flag;
 import com.vwmin.k8sawd.web.entity.Team;
@@ -46,7 +48,19 @@ public class CompetitionHandler {
         this.runningCompetition = runningCompetition;
     }
 
+    /**
+     * 检查比赛是否创建且正在进行
+     * @return 检查结果
+     */
     public boolean isRunning(){
+        return this.runningCompetition != null && runningCompetition.getStartTime().isBefore(LocalDateTimeUtil.now());
+    }
+
+    /**
+     * 检查比赛是否创建
+     * @return 检查结果
+     */
+    public boolean isSet(){
         return this.runningCompetition != null;
     }
 

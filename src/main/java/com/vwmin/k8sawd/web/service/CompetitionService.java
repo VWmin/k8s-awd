@@ -19,7 +19,7 @@ public interface CompetitionService extends IService<Competition> {
      */
     void createCompetition(Competition competition) throws SchedulerException;
 
-    Pair<Boolean, Integer> runningCompetition();
+    int runningCompetition();
 
     void finishAll();
 

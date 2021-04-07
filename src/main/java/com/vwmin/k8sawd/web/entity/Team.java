@@ -20,6 +20,8 @@ public class Team extends BaseEntity{
 
     private Integer score;
 
+    private Integer competitionId;
+
     public void plusScore(int score){
         this.score += score;
     }

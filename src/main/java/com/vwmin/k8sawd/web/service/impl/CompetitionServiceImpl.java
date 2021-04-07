@@ -42,6 +42,10 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private final KubernetesClient client;
     private final CompetitionHandler competitionHandler;
 
+
+    // fixme: 比赛创建后一分钟启动比赛，测试用，正式时应当删除
+    private LocalDateTime startAt;
+
     public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
                                   Scheduler scheduler, KubernetesClient client, CompetitionHandler competitionHandler) {
         this.systemService = systemService;
@@ -62,9 +66,9 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     @Override
     public void createCompetition(Competition competition) throws SchedulerException {
-        // 如果有正在进行的比赛，则创建失败
-        if (competitionHandler.isRunning()) {
-            throw new RoutineException(ResponseCode.FAIL, "已有正在进行的比赛");
+        // 如果有已设置的比赛，则创建失败
+        if (competitionHandler.isSet()) {
+            throw new RoutineException(ResponseCode.FAIL, "已存在一个比赛，考虑删除后再试");
         }
 
         // 检查起止时间适合符合语义
@@ -76,39 +80,47 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         competitionHandler.setRunningCompetition(competition);
 
 
-        List<Team> teams = teamService.list();
+
+        startAt = LocalDateTimeUtil.now().plusMinutes(1);
+
+
 
         // 设置启动比赛的定时任务
-        setDeploymentTask(teams);
+        setDeploymentTask();
 
         // 设置更新flag的定时任务
-        setFlagTask(teams);
+        setFlagTask();
 
 
     }
 
     @Override
-    public Pair<Boolean, Integer> runningCompetition() {
-        return systemService.runningCompetition();
+    public int runningCompetition() {
+        if (!competitionHandler.isSet()){
+            throw new RoutineException(ResponseCode.FAIL, "没有比赛被创建");
+        }
+        return competitionHandler.getRunningCompetition().getId();
     }
 
     @Override
     public void finishAll() {
+        //todo: 清理比赛资源
         systemService.finishAll();
         competitionHandler.setRunningCompetition(null);
     }
 
 
-    private void setFlagTask(List<Team> teams) throws SchedulerException {
+    private void setFlagTask() throws SchedulerException {
         Competition competition = competitionHandler.getRunningCompetition();
-        JobDetail job = JobBuilder.newJob(FlagJob.class).build();
+        JobDetail job = JobBuilder.newJob(FlagJob.class).withIdentity("flagJob").build();
         job.getJobDataMap().put("client", client);
         job.getJobDataMap().put("competitionHandler", competitionHandler);
         job.getJobDataMap().put("competitionId", competition.getId());
-        job.getJobDataMap().put("teams", teams);
+        // fixme: 是不是应该再创建一个定时任务用来给这些任务提供team参数
+        job.getJobDataMap().put("teamService", teamService);
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
-                .startAt(localDateTime2Date(LocalDateTimeUtil.now().plusSeconds(5)))
+                .startAt(localDateTime2Date(startAt))
                 .endAt(localDateTime2Date(competition.getEndTime()))
                 .withSchedule(
                         SimpleScheduleBuilder.simpleSchedule()
@@ -119,18 +131,18 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         scheduler.scheduleJob(job, trigger);
     }
 
-    private void setDeploymentTask(List<Team> teams) throws SchedulerException {
+    private void setDeploymentTask() throws SchedulerException {
         Competition competition = competitionHandler.getRunningCompetition();
-        JobDetail job = JobBuilder.newJob(DeploymentJob.class).build();
+        JobDetail job = JobBuilder.newJob(DeploymentJob.class).withIdentity("deploymentJob").build();
         // 传入k8s命令环境
         job.getJobDataMap().put("client", client);
         // 传入要启动的队伍信息
-        job.getJobDataMap().put("teams", teams);
+        job.getJobDataMap().put("teamService", teamService);
         // 传入当前比赛id
         job.getJobDataMap().put("competitionId", competition.getId());
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
-                .startAt(localDateTime2Date(LocalDateTimeUtil.now().plusSeconds(5)))
+                .startAt(localDateTime2Date(startAt))
                 .withSchedule(
                         SimpleScheduleBuilder.simpleSchedule()
                                 .withIntervalInSeconds(0)
