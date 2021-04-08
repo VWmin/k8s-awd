@@ -5,6 +5,7 @@ import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.CompetitionService;
+import org.quartz.SchedulerException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,7 @@ public class SystemController {
     }
 
     @DeleteMapping("/system/competition")
-    public ResponseEntity<Response> finishAll() {
+    public ResponseEntity<Response> finishAll() throws SchedulerException {
 
         competitionHandler.finishAll();
 

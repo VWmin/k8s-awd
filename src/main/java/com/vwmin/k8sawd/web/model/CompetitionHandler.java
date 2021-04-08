@@ -9,6 +9,8 @@ import com.vwmin.k8sawd.web.service.KubernetesService;
 import com.vwmin.k8sawd.web.service.SystemService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -34,14 +36,16 @@ public class CompetitionHandler {
     private final TeamService teamService;
     private final SystemService systemService;
     private final KubernetesService kubernetesService;
+    private final Scheduler scheduler;
 
 
     public CompetitionHandler(FlagService flagService, TeamService teamService,
-                              SystemService systemService, KubernetesService kubernetesService) {
+                              SystemService systemService, KubernetesService kubernetesService, Scheduler scheduler) {
         this.flagService = flagService;
         this.teamService = teamService;
         this.systemService = systemService;
         this.kubernetesService = kubernetesService;
+        this.scheduler = scheduler;
         runningCompetition = null;
         flagMap = new ConcurrentHashMap<>();
     }
@@ -146,7 +150,9 @@ public class CompetitionHandler {
         return true;
     }
 
-    public void finishAll(){
+    public void finishAll() throws SchedulerException {
+        // fixme 结束所有定时任务
+        scheduler.clear();
         kubernetesService.clearResource();
         systemService.finishAll();
         this.runningCompetition = null;
