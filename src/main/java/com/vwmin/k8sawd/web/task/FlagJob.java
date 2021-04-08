@@ -59,22 +59,22 @@ public class FlagJob implements Job {
         String appName = genAppName(competitionId, teamId);
 
 
-        log.info("正在等待Deployment[{}-deployment]准备完毕，将在2min后超时", appName);
+        log.trace("正在等待Deployment[{}-deployment]准备完毕，将在2min后超时", appName);
         // 等待deployment准备好，如果超时会报错
         client.apps().deployments().withName(appName + "-deployment")
                 .waitUntilReady(2, TimeUnit.MINUTES);
-        log.info("{}-deployment准备完成", appName);
+        log.trace("{}-deployment准备完成", appName);
 
 
         // 通过label找到对应pod的name
         PodList podList = client.pods().withLabel("app", appName).list();
         assert podList.getItems().size() == 1;
         String podName = podList.getItems().get(0).getMetadata().getName();
-        log.info("查询到Pod[{}]", podName);
+        log.trace("查询到Pod[{}]", podName);
 
         // 创建一个flag
         String flagVal = UUID.randomUUID().toString();
-        log.info("预计写入flag[{}]", flagVal);
+        log.info("{}预计写入flag[{}]", appName, flagVal);
 
         // 计时器
         final CountDownLatch execLatch = new CountDownLatch(1);
@@ -127,7 +127,7 @@ public class FlagJob implements Job {
 
         @Override
         public void onClose(int code, String reason) {
-            log.info("执行完成, code: {}", code);
+            log.trace("执行完成, code: {}", code);
             execLatch.countDown();
         }
     }
