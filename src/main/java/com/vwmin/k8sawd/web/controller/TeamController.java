@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
+import java.util.List;
+
 /**
  * @author vwmin
  * @version 1.0
@@ -33,7 +36,7 @@ public class TeamController {
     public ResponseEntity<Response> addTeam(@RequestBody Team team) {
 
         log.info("addTeam: {}", team);
-        team.setCompetitionId(competitionHandler.getRunningCompetition().getId());
+        team.setCompetitionId(competitionHandler.getId());
         teamService.addTeam(team);
 
         return Response.success();
@@ -61,6 +64,15 @@ public class TeamController {
     @GetMapping("/teams")
     public ResponseEntity<Response> teams() {
 
-        return Response.success(teamService.teamsByCompetition(competitionHandler.getRunningCompetition().getId()));
+        return Response.success(teamService.teamsByCompetition(competitionHandler.getId()));
+    }
+
+
+    @GetMapping("/team/rank")
+    public ResponseEntity<Response> rank(){
+        List<Team> teams = teamService.teamsByCompetition(competitionHandler.getId());
+        teams.sort(Comparator.comparing(Team::getScore).reversed());
+
+        return Response.success(teams);
     }
 }

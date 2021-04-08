@@ -1,11 +1,12 @@
 package com.vwmin.k8sawd.web.model;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.Flag;
 import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.service.FlagService;
+import com.vwmin.k8sawd.web.service.KubernetesService;
+import com.vwmin.k8sawd.web.service.SystemService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -31,17 +32,26 @@ public class CompetitionHandler {
     private final ConcurrentHashMap<String, Flag> flagMap;
     private final FlagService flagService;
     private final TeamService teamService;
+    private final SystemService systemService;
+    private final KubernetesService kubernetesService;
 
 
-    public CompetitionHandler(FlagService flagService, TeamService teamService) {
+    public CompetitionHandler(FlagService flagService, TeamService teamService,
+                              SystemService systemService, KubernetesService kubernetesService) {
         this.flagService = flagService;
         this.teamService = teamService;
+        this.systemService = systemService;
+        this.kubernetesService = kubernetesService;
         runningCompetition = null;
         flagMap = new ConcurrentHashMap<>();
     }
 
     public Competition getRunningCompetition() {
         return this.runningCompetition;
+    }
+
+    public int getId(){
+        return this.runningCompetition.getId();
     }
 
     public void setRunningCompetition(Competition runningCompetition) {
@@ -134,6 +144,12 @@ public class CompetitionHandler {
 
 
         return true;
+    }
+
+    public void finishAll(){
+        kubernetesService.clearResource();
+        systemService.finishAll();
+        this.runningCompetition = null;
     }
 
     public String getFlagByTeamId(int teamId) {

@@ -5,17 +5,14 @@ import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.lang.Pair;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
-import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.exception.RoutineException;
 import com.vwmin.k8sawd.web.mapper.CompetitionMapper;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.ResponseCode;
-import com.vwmin.k8sawd.web.service.CompetitionService;
-import com.vwmin.k8sawd.web.service.FlagService;
-import com.vwmin.k8sawd.web.service.SystemService;
-import com.vwmin.k8sawd.web.service.TeamService;
+import com.vwmin.k8sawd.web.service.*;
 import com.vwmin.k8sawd.web.task.DeploymentJob;
 import com.vwmin.k8sawd.web.task.FlagJob;
+import com.vwmin.k8sawd.web.task.GameCheckJob;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -25,7 +22,6 @@ import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author vwmin
@@ -40,6 +36,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private final TeamService teamService;
     private final Scheduler scheduler;
     private final KubernetesClient client;
+    private final KubernetesService kubernetesService;
     private final CompetitionHandler competitionHandler;
 
 
@@ -47,11 +44,12 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private LocalDateTime startAt;
 
     public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
-                                  Scheduler scheduler, KubernetesClient client, CompetitionHandler competitionHandler) {
+                                  Scheduler scheduler, KubernetesClient client, KubernetesService kubernetesService, CompetitionHandler competitionHandler) {
         this.systemService = systemService;
         this.teamService = teamService;
         this.scheduler = scheduler;
         this.client = client;
+        this.kubernetesService = kubernetesService;
         this.competitionHandler = competitionHandler;
 
     }
@@ -91,29 +89,32 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         // 设置更新flag的定时任务
         setFlagTask();
 
+        // 设置比赛结束的定时任务
+        setGameCheckTask();
 
     }
 
-    @Override
-    public int runningCompetition() {
-        if (!competitionHandler.isSet()){
-            throw new RoutineException(ResponseCode.FAIL, "没有比赛被创建");
-        }
-        return competitionHandler.getRunningCompetition().getId();
-    }
+    private void setGameCheckTask() throws SchedulerException {
+        Competition competition = competitionHandler.getRunningCompetition();
+        JobDetail job = JobBuilder.newJob(GameCheckJob.class).withIdentity("gameCheckJob").build();
+        job.getJobDataMap().put("kubernetesService", kubernetesService);
 
-    @Override
-    public void finishAll() {
-        //todo: 清理比赛资源
-        systemService.finishAll();
-        competitionHandler.setRunningCompetition(null);
+        SimpleTrigger trigger = TriggerBuilder.newTrigger()
+                .startAt(localDateTime2Date(competition.getEndTime()))
+                .withSchedule(
+                        SimpleScheduleBuilder.simpleSchedule()
+                                .withIntervalInSeconds(0)
+                                .withRepeatCount(0)
+                ).build();
+
+        scheduler.scheduleJob(job, trigger);
     }
 
 
     private void setFlagTask() throws SchedulerException {
         Competition competition = competitionHandler.getRunningCompetition();
         JobDetail job = JobBuilder.newJob(FlagJob.class).withIdentity("flagJob").build();
-        job.getJobDataMap().put("client", client);
+        job.getJobDataMap().put("kubernetesService", kubernetesService);
         job.getJobDataMap().put("competitionHandler", competitionHandler);
         job.getJobDataMap().put("competitionId", competition.getId());
         // fixme: 是不是应该再创建一个定时任务用来给这些任务提供team参数
@@ -135,7 +136,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         Competition competition = competitionHandler.getRunningCompetition();
         JobDetail job = JobBuilder.newJob(DeploymentJob.class).withIdentity("deploymentJob").build();
         // 传入k8s命令环境
-        job.getJobDataMap().put("client", client);
+        job.getJobDataMap().put("kubernetesService", kubernetesService);
         // 传入要启动的队伍信息
         job.getJobDataMap().put("teamService", teamService);
         // 传入当前比赛id

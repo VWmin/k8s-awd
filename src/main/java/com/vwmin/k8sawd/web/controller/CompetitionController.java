@@ -24,11 +24,9 @@ import java.util.List;
 @RequestMapping("/manager")
 public class CompetitionController {
     private final CompetitionService competitionService;
-    private final TeamService teamService;
 
-    public CompetitionController(CompetitionService competitionService, TeamService teamService) {
+    public CompetitionController(CompetitionService competitionService) {
         this.competitionService = competitionService;
-        this.teamService = teamService;
     }
 
 
@@ -41,11 +39,4 @@ public class CompetitionController {
         return Response.success();
     }
 
-    @GetMapping("/competition/rank")
-    public ResponseEntity<Response> rank(){
-        List<Team> teams = teamService.teamsByCompetition(competitionService.runningCompetition());
-        teams.sort(Comparator.comparing(Team::getScore).reversed());
-
-        return Response.success(teams);
-    }
 }

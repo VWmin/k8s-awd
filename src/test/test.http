@@ -16,7 +16,7 @@ Content-Type: application/json
 
 
 ### 查询rank
-GET http://{{hostname}}/manager/competition/rank
+GET http://{{hostname}}/manager/team/rank
 
 ### 将所有比赛置为停止
 DELETE http://{{hostname}}/manager/system/competition

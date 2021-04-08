@@ -19,8 +19,4 @@ public interface CompetitionService extends IService<Competition> {
      */
     void createCompetition(Competition competition) throws SchedulerException;
 
-    int runningCompetition();
-
-    void finishAll();
-
 }

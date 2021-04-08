@@ -4,7 +4,7 @@ import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.model.ResponseCode;
-import com.vwmin.k8sawd.web.service.CompetitionService;
+import com.vwmin.k8sawd.web.service.KubernetesService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.springframework.http.ResponseEntity;
@@ -25,30 +25,20 @@ import java.util.Map;
 @RequestMapping("/manager")
 public class PodController {
 
-    private final KubernetesClient kubernetesClient;
+    private final KubernetesService kubernetesService;
     private final CompetitionHandler competitionHandler;
     private final TeamService teamService;
 
-    public PodController(KubernetesClient kubernetesClient, CompetitionHandler competitionHandler, TeamService teamService) {
-        this.kubernetesClient = kubernetesClient;
+    public PodController(KubernetesService kubernetesService, CompetitionHandler competitionHandler, TeamService teamService) {
+        this.kubernetesService = kubernetesService;
         this.competitionHandler = competitionHandler;
         this.teamService = teamService;
     }
 
-    @GetMapping("/pods")
-    public ResponseEntity<Response> pods() {
-
-        return Response.success(kubernetesClient.pods().list());
-    }
 
     @GetMapping("/clear")
     public ResponseEntity<Response> clear() {
-
-        return Response.success(
-                kubernetesClient.apps().deployments().delete() &&
-                kubernetesClient.services().delete() &&
-                kubernetesClient.network().ingresses().delete()
-        );
+        return Response.success(kubernetesService.clearResource());
     }
 
     @GetMapping("/services")
@@ -63,12 +53,7 @@ public class PodController {
         Map<String, String> ret = new HashMap<>(teams.size());
 
         for (Team team : teams) {
-            String appName = "awd-" + competitionId + "-" + team.getId();
-
-            String entry = kubernetesClient.network().ingresses().withName(appName + "-ingress").isReady()
-                    ? "http://121.36.230.118:30232/" + appName + "/"
-                    : "";
-
+            String entry = kubernetesService.serviceEntry(competitionId, team.getId());
             ret.put("队伍" + team.getId() + "服务入口", entry);
         }
 

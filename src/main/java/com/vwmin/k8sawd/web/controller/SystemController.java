@@ -1,11 +1,10 @@
 package com.vwmin.k8sawd.web.controller;
 
-import cn.hutool.core.lang.Pair;
-import com.vwmin.k8sawd.web.entity.Competition;
+import com.vwmin.k8sawd.web.exception.RoutineException;
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
+import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.CompetitionService;
-import com.vwmin.k8sawd.web.service.SystemService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,22 +20,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/manager")
 public class SystemController {
 
-    private final CompetitionService competitionService;
+    private final CompetitionHandler competitionHandler;
 
-    public SystemController(CompetitionService competitionService) {
-        this.competitionService = competitionService;
+    public SystemController(CompetitionHandler competitionHandler) {
+        this.competitionHandler = competitionHandler;
     }
 
 
     @GetMapping("/system/runningCompetition")
     public ResponseEntity<Response> getRunningCompetition() {
-        return Response.success(competitionService.runningCompetition());
+        if (!competitionHandler.isSet()){
+            throw new RoutineException(ResponseCode.FAIL, "没有比赛被创建");
+        }
+        return Response.success(competitionHandler.getRunningCompetition());
     }
 
     @DeleteMapping("/system/competition")
     public ResponseEntity<Response> finishAll() {
 
-        competitionService.finishAll();
+        competitionHandler.finishAll();
 
         return Response.success();
     }
