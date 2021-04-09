@@ -4,9 +4,11 @@ import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.TeamService;
+import com.vwmin.k8sawd.web.service.UploadLogoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Comparator;
 import java.util.List;
@@ -20,14 +22,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/manager")
 public class TeamController {
-    private final
-    TeamService teamService;
+    private final TeamService teamService;
+    private final UploadLogoService uploadLogoService;
 
-    // fixme: 创建team时的competitionId应由前端给出
     private final CompetitionHandler competitionHandler;
 
-    public TeamController(TeamService teamService, CompetitionHandler competitionHandler) {
+    public TeamController(TeamService teamService, UploadLogoService uploadLogoService, CompetitionHandler competitionHandler) {
         this.teamService = teamService;
+        this.uploadLogoService = uploadLogoService;
         this.competitionHandler = competitionHandler;
     }
 
@@ -74,5 +76,10 @@ public class TeamController {
         teams.sort(Comparator.comparing(Team::getScore).reversed());
 
         return Response.success(teams);
+    }
+
+    @PostMapping("/team/uploadLog")
+    public ResponseEntity<Response> uploadPicture(@RequestParam MultipartFile picture){
+        return Response.success(uploadLogoService.checkAndSave(picture));
     }
 }
