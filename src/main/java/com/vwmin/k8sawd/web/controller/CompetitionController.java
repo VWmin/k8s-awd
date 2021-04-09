@@ -1,18 +1,12 @@
 package com.vwmin.k8sawd.web.controller;
 
 import com.vwmin.k8sawd.web.entity.Competition;
-import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.CompetitionService;
-import com.vwmin.k8sawd.web.service.TeamService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * @author vwmin
@@ -36,7 +30,7 @@ public class CompetitionController {
 
         competitionService.createCompetition(competition);
 
-        return Response.success();
+        return Response.success("比赛创建成功");
     }
 
     @GetMapping("/competitions")

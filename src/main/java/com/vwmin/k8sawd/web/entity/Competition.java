@@ -30,6 +30,9 @@ public class Competition extends BaseEntity {
     @TableField(exist = false)
     private String status;
 
+    @TableField(exist = false)
+    private boolean isAlive;
+
     private Integer score;
 
 }

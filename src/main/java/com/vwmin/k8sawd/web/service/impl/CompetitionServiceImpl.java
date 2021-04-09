@@ -36,7 +36,6 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private final SystemService systemService;
     private final TeamService teamService;
     private final Scheduler scheduler;
-    private final KubernetesClient client;
     private final KubernetesService kubernetesService;
     private final CompetitionHandler competitionHandler;
 
@@ -45,18 +44,17 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private LocalDateTime startAt;
 
     public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
-                                  Scheduler scheduler, KubernetesClient client, KubernetesService kubernetesService, CompetitionHandler competitionHandler) {
+                                  Scheduler scheduler, KubernetesService kubernetesService, CompetitionHandler competitionHandler) {
         this.systemService = systemService;
         this.teamService = teamService;
         this.scheduler = scheduler;
-        this.client = client;
         this.kubernetesService = kubernetesService;
         this.competitionHandler = competitionHandler;
 
     }
 
     @PostConstruct
-    public void init(){
+    public void init() {
         Pair<Boolean, Integer> pair = systemService.runningCompetition();
         if (pair.getKey()) {
             competitionHandler.setRunningCompetition(getById(pair.getValue()));
@@ -79,9 +77,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         competitionHandler.setRunningCompetition(competition);
 
 
-
         startAt = LocalDateTimeUtil.now().plusMinutes(1);
-
 
 
         // 设置启动比赛的定时任务
@@ -158,11 +154,11 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     public List<Competition> list() {
         List<Competition> list = super.list();
         int current = competitionHandler.isSet() ? competitionHandler.getId() : -1;
-        for (Competition competition : list){
-            String status = competition.getId() != current
-                    ? "已结束"
-                    : (!competitionHandler.isRunning() ? "等待开始" : "正在进行");
+        for (Competition competition : list) {
+            boolean isAlive = competition.getId() == current;
+            String status = isAlive ? (!competitionHandler.isRunning() ? "等待开始" : "正在进行") : "已结束";
             competition.setStatus(status);
+            competition.setAlive(isAlive);
         }
         return list;
     }
