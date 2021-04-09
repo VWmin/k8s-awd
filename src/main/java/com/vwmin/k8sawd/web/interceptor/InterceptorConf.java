@@ -12,9 +12,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class InterceptorConf implements WebMvcConfigurer {
     private final TeamRequestInterceptor teamRequestInterceptor;
+    private final ManagerAuthInterceptor managerAuthInterceptor;
 
-    public InterceptorConf(TeamRequestInterceptor teamRequestInterceptor) {
+    public InterceptorConf(TeamRequestInterceptor teamRequestInterceptor, ManagerAuthInterceptor managerAuthInterceptor) {
         this.teamRequestInterceptor = teamRequestInterceptor;
+        this.managerAuthInterceptor = managerAuthInterceptor;
     }
 
     @Override
@@ -23,6 +25,12 @@ public class InterceptorConf implements WebMvcConfigurer {
         registry.addInterceptor(teamRequestInterceptor)
                 .addPathPatterns("/manager/team**")
                 .addPathPatterns("/manager/team/**");
+
+
+        // 对manager下操作进行权限检查
+        registry.addInterceptor(managerAuthInterceptor)
+                .addPathPatterns("/manager/**")
+                .excludePathPatterns("/manager/login", "/manager/logout", "/manager/base");
 
     }
 }
