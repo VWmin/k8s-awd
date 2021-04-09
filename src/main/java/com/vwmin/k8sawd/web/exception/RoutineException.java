@@ -12,6 +12,10 @@ import org.springframework.http.ResponseEntity;
 public class RoutineException extends RuntimeException{
     private final ResponseEntity<Response> response;
 
+    public RoutineException(String msg){
+        this(ResponseCode.FAIL, msg, null);
+    }
+
     public RoutineException(ResponseCode exceptionCode){
         this(exceptionCode, "", null);
     }

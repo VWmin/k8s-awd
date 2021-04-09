@@ -22,14 +22,14 @@ CREATE TABLE `competition`
 DROP TABLE IF EXISTS `team`;
 CREATE TABLE `team`
 (
-    `id`         int          NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `created_at` datetime     NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updated_at` datetime COMMENT '更新时间',
+    `id`             int          NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `created_at`     datetime     NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`     datetime COMMENT '更新时间',
 
-    `name`       varchar(255) NOT NULL DEFAULT '' COMMENT '队伍名称',
-    `logo`       varchar(255) NOT NULL DEFAULT 'default.png' COMMENT '指向logo路径',
-    `score`      int      NOT NULL DEFAULT 0 COMMENT '分数',
-    `competition_id`    int          NULL     DEFAULT NULL COMMENT '队伍所属的比赛id',
+    `name`           varchar(255) NOT NULL DEFAULT '' COMMENT '队伍名称',
+    `logo`           varchar(255) NOT NULL DEFAULT 'default.png' COMMENT '指向logo路径',
+    `score`          int          NOT NULL DEFAULT 0 COMMENT '分数',
+    `competition_id` int          NULL     DEFAULT NULL COMMENT '队伍所属的比赛id',
 
 
     PRIMARY KEY (`id`)
@@ -66,9 +66,51 @@ CREATE TABLE `sys`
     `created_at` datetime     NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime COMMENT '更新时间',
 
-    `sys_key`        varchar(255) NOT NULL DEFAULT '' COMMENT '配置key',
-    `sys_value`      varchar(255) NOT NULL DEFAULT '' COMMENT '配置value',
+    `sys_key`    varchar(255) NOT NULL DEFAULT '' COMMENT '配置key',
+    `sys_value`  varchar(255) NOT NULL DEFAULT '' COMMENT '配置value',
 
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1 comment 'system表';
+
+
+# -- ----------------------------
+# -- 管理员表
+# -- ----------------------------
+DROP TABLE IF EXISTS `manager`;
+CREATE TABLE `manager`
+(
+    `id`         int          NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `created_at` datetime     NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` datetime COMMENT '更新时间',
+
+    `name`       varchar(255) NOT NULL DEFAULT '' COMMENT '管理员名称',
+    `password`   varchar(255) NOT NULL DEFAULT '' COMMENT '管理员密码',
+    `token`      varchar(255) NOT NULL DEFAULT '' COMMENT '确保单点登录',
+
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1 comment '管理员表';
+
+## 创建默认管理账号
+INSERT INTO `manager`
+VALUES (0, sysdate(), sysdate(), 'admin', 'admin', '');
+
+-- ----------------------------
+-- 日志表
+-- ----------------------------
+DROP TABLE IF EXISTS `log`;
+CREATE TABLE `log`
+(
+
+    `id`         bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `created_at` datetime   NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` datetime COMMENT '更新时间',
+
+    `level`      int          DEFAULT 1 COMMENT '日志级别',
+    `kind`       varchar(255) DEFAULT '' COMMENT '类别',
+    `content`    varchar(255) DEFAULT '' COMMENT '内容',
+
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1 comment '日志表';
