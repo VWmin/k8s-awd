@@ -169,12 +169,12 @@ public class KubernetesServiceImpl implements KubernetesService {
 
         @Override
         public void onOpen(Response response) {
-            log.info("尝试向Pod写入flag，将在5s后超时");
+            log.trace("尝试向Pod写入flag，将在5s后超时");
         }
 
         @Override
         public void onFailure(Throwable t, Response response) {
-            log.info("尝试执行命令时出错, msg: {}", t.getMessage());
+            log.warn("尝试执行命令时出错, msg: {}", t.getMessage());
             execLatch.countDown();
         }
 

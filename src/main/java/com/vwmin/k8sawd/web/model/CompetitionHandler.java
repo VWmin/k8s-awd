@@ -151,7 +151,7 @@ public class CompetitionHandler {
     }
 
     public void finishAll() throws SchedulerException {
-        // fixme 结束所有定时任务
+        roundCheck();
         scheduler.clear();
         kubernetesService.clearResource();
         systemService.finishAll();
