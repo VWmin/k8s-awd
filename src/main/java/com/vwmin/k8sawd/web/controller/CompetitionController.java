@@ -39,4 +39,9 @@ public class CompetitionController {
         return Response.success();
     }
 
+    @GetMapping("/competitions")
+    public ResponseEntity<Response> competitions(){
+        return Response.success(competitionService.list());
+    }
+
 }

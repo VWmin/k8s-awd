@@ -22,6 +22,7 @@ import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author vwmin
@@ -151,6 +152,19 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
                 ).build();
 
         scheduler.scheduleJob(job, trigger);
+    }
+
+    @Override
+    public List<Competition> list() {
+        List<Competition> list = super.list();
+        int current = competitionHandler.isSet() ? competitionHandler.getId() : -1;
+        for (Competition competition : list){
+            String status = competition.getId() != current
+                    ? "已结束"
+                    : (!competitionHandler.isRunning() ? "等待开始" : "正在进行");
+            competition.setStatus(status);
+        }
+        return list;
     }
 
     private void checkTime(LocalDateTime startTime, LocalDateTime endTime) {

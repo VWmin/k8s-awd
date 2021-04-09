@@ -25,6 +25,10 @@ public class Competition extends BaseEntity {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 
+    private String title;
+
+    @TableField(exist = false)
+    private String status;
 
     private Integer score;
 

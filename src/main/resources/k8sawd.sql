@@ -8,6 +8,7 @@ CREATE TABLE `competition`
     `created_at` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime COMMENT '更新时间',
 
+    `title`      varchar(255)      DEFAULT '' COMMENT '比赛标题',
     `start_time` datetime NOT NULL COMMENT '开始时间',
     `end_time`   datetime NOT NULL COMMENT '结束时间',
     `score`      int      NOT NULL DEFAULT 0 COMMENT '分数',
@@ -30,8 +31,8 @@ CREATE TABLE `team`
     `logo`           varchar(255) NOT NULL DEFAULT 'default.png' COMMENT '指向logo路径',
     `score`          int          NOT NULL DEFAULT 0 COMMENT '分数',
     `competition_id` int          NULL     DEFAULT NULL COMMENT '队伍所属的比赛id',
-    `password`   varchar(255) DEFAULT '' COMMENT '队伍密码',
-    `secret_key` varchar(255) DEFAULT '' COMMENT '队伍提交flag时的唯一标识',
+    `password`       varchar(255)          DEFAULT '' COMMENT '队伍密码',
+    `secret_key`     varchar(255)          DEFAULT '' COMMENT '队伍提交flag时的唯一标识',
 
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
