@@ -35,9 +35,12 @@ public class TeamRequestInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (!competitionHandler.isSet()){
+        if (!competitionHandler.isSet()) {
             throw new RoutineException(ResponseCode.FAIL, "请先创建比赛.");
         }
+//        else if (!competitionHandler.isRunning()) {
+//            throw new RoutineException("比赛开始后无法修改队伍");
+//        }
         return true;
     }
 }

@@ -14,12 +14,17 @@ public interface TeamService extends IService<Team> {
 
     /**
      * 添加一个队伍
+     *
      * @param team 要添加的队伍
      */
-    void addTeam(Team team);
+    void addTeam(Team team, int competitionId);
 
-    void editTeam(Team team);
+    void addTeams(List<Team> teams, int competitionId);
+
+    void editTeam(Team team, int competitionId);
 
     List<Team> teamsByCompetition(int competitionId);
 
+
+    void resetPassword(Team team, int competitionId);
 }

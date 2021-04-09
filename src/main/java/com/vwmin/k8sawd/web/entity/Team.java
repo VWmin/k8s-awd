@@ -22,6 +22,10 @@ public class Team extends BaseEntity{
 
     private Integer competitionId;
 
+    private String password;
+
+    private String secretKey;
+
     public void plusScore(int score){
         this.score += score;
     }
