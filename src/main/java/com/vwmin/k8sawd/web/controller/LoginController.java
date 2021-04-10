@@ -54,13 +54,11 @@ public class LoginController {
 
     @RequestMapping("/login")
     public ResponseEntity<Response> login(@RequestBody Team team) {
-        if (!competitionHandler.isRunning()) {
-            throw new RoutineException("比赛尚未开始");
-        }
-        if (teamService.login(team)) {
+
+        if (competitionHandler.isRunning() && teamService.login(team)) {
             return Response.success(teamService.getToken(team));
         } else {
-            throw new RoutineException(ResponseCode.FAIL, "登录验证失败");
+            throw new RoutineException(ResponseCode.FAIL, "登录失败");
         }
 
     }

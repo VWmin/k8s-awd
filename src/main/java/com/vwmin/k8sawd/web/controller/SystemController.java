@@ -34,7 +34,7 @@ public class SystemController {
 
     @GetMapping("/system/runningCompetition")
     public ResponseEntity<Response> getRunningCompetition() {
-        if (!competitionHandler.isSet()){
+        if (competitionHandler.isUnset() || competitionHandler.isFinished()){
             throw new RoutineException(ResponseCode.FAIL, "没有比赛被创建");
         }
         return Response.success(competitionHandler.getRunningCompetition());
@@ -42,10 +42,7 @@ public class SystemController {
 
     @GetMapping("/competition/status")
     public ResponseEntity<Response> competitionStatus(){
-        return Response.success(new HashMap<String, Object>(){{
-            put("isSet", competitionHandler.isSet());
-            put("isRunning", competitionHandler.isRunning());
-        }});
+        return Response.success(competitionHandler.status());
     }
 
     @DeleteMapping("/system/competition")

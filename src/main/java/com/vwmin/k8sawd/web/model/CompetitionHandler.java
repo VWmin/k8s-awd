@@ -1,6 +1,5 @@
 package com.vwmin.k8sawd.web.model;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.Flag;
 import com.vwmin.k8sawd.web.entity.Team;
@@ -15,9 +14,9 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -70,29 +69,27 @@ public class CompetitionHandler {
         this.status = CompetitionStatus.SET;
     }
 
-    private void start(){
+    public CompetitionStatus status() {
+        return this.status;
+    }
+
+    private void start() {
         this.status = CompetitionStatus.RUNNING;
     }
 
-    /**
-     * 检查比赛是否创建且正在进行
-     *
-     * @return 检查结果
-     */
+    public boolean isUnset() {
+        return this.status == CompetitionStatus.UNSET;
+    }
+
+    public boolean isSet() {
+        return this.status == CompetitionStatus.SET;
+    }
+
     public boolean isRunning() {
         return this.status == CompetitionStatus.RUNNING;
     }
 
-    /**
-     * 检查比赛是否创建
-     *
-     * @return 检查结果
-     */
-    public boolean isSet() {
-        return this.status != CompetitionStatus.UNSET;
-    }
-
-    public boolean isFinished(){
+    public boolean isFinished() {
         return this.status == CompetitionStatus.FINISHED;
     }
 
@@ -149,8 +146,8 @@ public class CompetitionHandler {
      * @param flagVal 提交的flag
      */
     public void validFlag(int teamId, String flagVal) {
-        if (!isRunning()){
-            throw new RoutineException("比赛已结束");
+        if (!isRunning()) {
+            throw new RoutineException("比赛未在进行中");
         }
         // 检查是不是一个flag
         if (!flagMap.containsKey(flagVal)) {
@@ -178,6 +175,12 @@ public class CompetitionHandler {
         this.status = CompetitionStatus.FINISHED;
     }
 
+    @PreDestroy
+    public void exit() throws SchedulerException {
+        log.info("exiting...");
+        finishAll();
+    }
+
     public GameBox gameBoxByTeamId(int teamId) {
         if (!isRunning()) {
             return null;
@@ -190,7 +193,7 @@ public class CompetitionHandler {
                 entry, runningCompetition.getScore(), flag.isUsed(), "暂无描述");
     }
 
-    public boolean isAttacked(int teamId){
+    public boolean isAttacked(int teamId) {
         return getFlagByTeamId(teamId).isUsed();
     }
 

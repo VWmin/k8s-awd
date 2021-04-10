@@ -64,7 +64,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     @Override
     public void createCompetition(Competition competition) throws SchedulerException {
         // 如果有已设置的比赛，则创建失败
-        if (competitionHandler.isSet()) {
+        if (competitionHandler.isSet() || competitionHandler.isRunning()) {
             throw new RoutineException(ResponseCode.FAIL, "已存在一个比赛，考虑删除后再试");
         }
 
@@ -153,7 +153,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     @Override
     public List<Competition> list() {
         List<Competition> list = super.list();
-        int current = competitionHandler.isSet() ? competitionHandler.getId() : -1;
+        int current = competitionHandler.isUnset() ? -1 : competitionHandler.getId();
         for (Competition competition : list) {
             boolean isAlive = competition.getId() == current && !competitionHandler.isFinished();
             String status = !isAlive ? "已结束" : (competitionHandler.isRunning() ? "正在进行" : "等待开始");
