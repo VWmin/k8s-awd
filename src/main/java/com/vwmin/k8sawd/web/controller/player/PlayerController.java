@@ -43,7 +43,7 @@ public class PlayerController {
     @GetMapping("/team/gameboxes")
     public ResponseEntity<Response> service(@RequestHeader("Authorization") String token) {
         Team teamByToken = teamService.getTeamByToken(token);
-        return Response.success(new ArrayList<CompetitionHandler.GameBox>(){{
+        return Response.success(new ArrayList<CompetitionHandler.GameBox>() {{
             add(competitionHandler.gameBoxByTeamId(teamByToken.getId()));
         }});
     }
@@ -65,11 +65,11 @@ public class PlayerController {
 
 
     @GetMapping("/team/rank")
-    public ResponseEntity<Response> rank(){
+    public ResponseEntity<Response> rank() {
         List<Team> teams = teamService.list();
         teams.sort(Comparator.comparing(Team::getScore).reversed());
         List<RankItem> rankList = new ArrayList<>(teams.size());
-        for (Team team : teams){
+        for (Team team : teams) {
             boolean attacked = competitionHandler.isAttacked(team.getId());
             RankItem item = new RankItem(team, attacked);
             rankList.add(item);
@@ -81,19 +81,25 @@ public class PlayerController {
     }
 
     @Data
-    private static class RankItem{
+    private static class RankItem {
         int teamId;
         String teamName;
         String teamLogo;
         int score;
         boolean isAttacked;
 
-        RankItem(Team team, boolean isAttacked){
+        RankItem(Team team, boolean isAttacked) {
             this.teamId = team.getId();
             this.teamName = team.getName();
             this.teamLogo = team.getLogo();
             this.score = team.getScore();
             this.isAttacked = isAttacked;
         }
+    }
+
+
+    @GetMapping("/time")
+    public ResponseEntity<Response> getTime() {
+        return Response.success(competitionHandler.getRound());
     }
 }

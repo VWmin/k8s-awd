@@ -1,5 +1,6 @@
 package com.vwmin.k8sawd.web.model;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.Flag;
 import com.vwmin.k8sawd.web.entity.Team;
@@ -17,11 +18,15 @@ import org.quartz.SchedulerException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -215,6 +220,23 @@ public class CompetitionHandler {
         return runningCompetition.getTitle();
     }
 
+    public Round getRound(){
+        Round round = new Round();
+        LocalDateTime startTime = runningCompetition.getStartTime();
+        LocalDateTime nowTime = LocalDateTime.now();
+
+        long offset = LocalDateTimeUtil.between(startTime, nowTime).getSeconds();
+
+        round.roundDuration = 60;
+        round.nowRound = offset / round.roundDuration;
+        round.roundRemainTime = round.roundDuration - (offset % round.roundDuration);
+        round.status = "测试";
+
+
+        return round;
+
+    }
+
 
     @Data
     @AllArgsConstructor
@@ -225,5 +247,15 @@ public class CompetitionHandler {
         private int score;
         private boolean isAttacked;
         private String description;
+    }
+
+    @Data
+    public static class Round {
+
+        // 每轮持续时长 s
+        private long roundDuration;
+        private long nowRound;
+        private long roundRemainTime;
+        private String status;
     }
 }
