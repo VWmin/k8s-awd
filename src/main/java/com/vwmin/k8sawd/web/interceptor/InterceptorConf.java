@@ -27,10 +27,10 @@ public class InterceptorConf implements WebMvcConfigurer {
                 .addPathPatterns("/manager/team/**");
 
 
-        // 对manager下操作进行权限检查
-        registry.addInterceptor(managerAuthInterceptor)
-                .addPathPatterns("/manager/**")
-                .excludePathPatterns("/manager/login", "/manager/logout", "/manager/base");
+//        // 对manager下操作进行权限检查
+//        registry.addInterceptor(managerAuthInterceptor)
+//                .addPathPatterns("/manager/**")
+//                .excludePathPatterns("/manager/login", "/manager/logout", "/manager/base", "/manager/competition/status");
 
     }
 }

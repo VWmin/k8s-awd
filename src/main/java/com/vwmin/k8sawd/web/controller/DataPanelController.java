@@ -3,6 +3,7 @@ package com.vwmin.k8sawd.web.controller;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.LogService;
 import com.vwmin.k8sawd.web.service.ManagerService;
+import com.vwmin.k8sawd.web.service.SystemService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +26,12 @@ public class DataPanelController {
 
     private final ManagerService managerService;
     private final LogService logService;
+    private final SystemService systemService;
 
-    public DataPanelController(ManagerService managerService, LogService logService) {
+    public DataPanelController(ManagerService managerService, LogService logService, SystemService systemService) {
         this.managerService = managerService;
         this.logService = logService;
+        this.systemService = systemService;
     }
 
     @GetMapping("/panel")
@@ -59,6 +62,7 @@ public class DataPanelController {
         return Response.success(new HashMap<String, String>(){{
             put("title", "这是啥");
             put("language", "zh-CN");
+            put("competitionId", systemService.runningCompetition()+"");
         }});
     }
 

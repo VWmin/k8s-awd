@@ -37,14 +37,14 @@ public class SystemServiceImpl extends ServiceImpl<SystemMapper, System> impleme
 
 
     @Override
-    public Pair<Boolean, Integer> runningCompetition() {
+    public int runningCompetition() {
         LambdaQueryWrapper<System> condition = new LambdaQueryWrapper<>();
         condition.eq(System::getSysKey, System.KEY_RUNNING_COMPETITION);
         String val = getOne(condition).getSysValue();
 
         return NumberUtil.isInteger(val)
-                ? new Pair<>(true, Integer.parseInt(val))
-                : new Pair<>(false, -1);
+                ? Integer.parseInt(val)
+                : -1;
     }
 
     @Override

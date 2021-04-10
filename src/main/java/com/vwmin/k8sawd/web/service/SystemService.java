@@ -14,9 +14,9 @@ public interface SystemService extends IService<System> {
 
     /**
      * 获得一个当前运行中的比赛
-     * @return 是否存在，competition id
+     * @return 是否存在，不存在返回-1
      */
-     Pair<Boolean, Integer> runningCompetition();
+     int runningCompetition();
 
 
     /**

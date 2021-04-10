@@ -42,9 +42,7 @@ public class KubernetesServiceImpl implements KubernetesService {
     @Override
     public String serviceEntry(int competitionId, int teamId) {
         String appName = nameRule(competitionId, teamId);
-        return client.network().ingresses().withName(appName + "-ingress").isReady()
-                ? "http://121.36.230.118:30232/" + appName + "/"
-                : "服务准备中";
+        return "http://121.36.230.118:30232/" + appName + "/";
     }
 
     @Override

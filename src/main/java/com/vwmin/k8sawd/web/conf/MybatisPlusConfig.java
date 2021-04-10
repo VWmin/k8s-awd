@@ -21,14 +21,14 @@ public class MybatisPlusConfig implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
-        log.info("start insert fill ....");
+        log.trace("start insert fill ....");
         this.strictInsertFill(metaObject, "createdAt", LocalDateTime.class, LocalDateTime.now()); // 起始版本 3.3.0(推荐使用)
         this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now()); // 起始版本 3.3.0(推荐)
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        log.info("start update fill ....");
+        log.trace("start update fill ....");
         this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now()); // 起始版本 3.3.0(推荐)
     }
 }

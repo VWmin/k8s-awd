@@ -55,9 +55,9 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     @PostConstruct
     public void init() {
-        Pair<Boolean, Integer> pair = systemService.runningCompetition();
-        if (pair.getKey()) {
-            competitionHandler.setRunningCompetition(getById(pair.getValue()));
+        int id = systemService.runningCompetition();
+        if (id != -1) {
+            competitionHandler.setRunningCompetition(getById(id));
         }
     }
 
@@ -155,8 +155,8 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         List<Competition> list = super.list();
         int current = competitionHandler.isSet() ? competitionHandler.getId() : -1;
         for (Competition competition : list) {
-            boolean isAlive = competition.getId() == current;
-            String status = isAlive ? (!competitionHandler.isRunning() ? "等待开始" : "正在进行") : "已结束";
+            boolean isAlive = competition.getId() == current && !competitionHandler.isFinished();
+            String status = !isAlive ? "已结束" : (competitionHandler.isRunning() ? "正在进行" : "等待开始");
             competition.setStatus(status);
             competition.setAlive(isAlive);
         }

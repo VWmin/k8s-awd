@@ -4,6 +4,10 @@
 GET http://{{hostname}}/manager/system/runningCompetition
 
 
+### 查看当前比赛状态
+GET http://{{hostname}}/manager/competition/status
+
+
 ### 创建一个比赛，如果成功会被设置为alive
 POST http://{{hostname}}/manager/competition
 Content-Type: application/json

@@ -4,13 +4,18 @@ import cn.hutool.core.date.LocalDateTimeUtil;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.Flag;
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.enums.CompetitionStatus;
+import com.vwmin.k8sawd.web.exception.RoutineException;
 import com.vwmin.k8sawd.web.service.FlagService;
 import com.vwmin.k8sawd.web.service.KubernetesService;
 import com.vwmin.k8sawd.web.service.SystemService;
 import com.vwmin.k8sawd.web.service.TeamService;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -38,6 +43,8 @@ public class CompetitionHandler {
     private final KubernetesService kubernetesService;
     private final Scheduler scheduler;
 
+    private CompetitionStatus status = CompetitionStatus.UNSET;
+
 
     public CompetitionHandler(FlagService flagService, TeamService teamService,
                               SystemService systemService, KubernetesService kubernetesService, Scheduler scheduler) {
@@ -54,28 +61,39 @@ public class CompetitionHandler {
         return this.runningCompetition;
     }
 
-    public int getId(){
+    public int getId() {
         return this.runningCompetition.getId();
     }
 
     public void setRunningCompetition(Competition runningCompetition) {
         this.runningCompetition = runningCompetition;
+        this.status = CompetitionStatus.SET;
+    }
+
+    private void start(){
+        this.status = CompetitionStatus.RUNNING;
     }
 
     /**
      * 检查比赛是否创建且正在进行
+     *
      * @return 检查结果
      */
-    public boolean isRunning(){
-        return this.runningCompetition != null && runningCompetition.getStartTime().isBefore(LocalDateTimeUtil.now());
+    public boolean isRunning() {
+        return this.status == CompetitionStatus.RUNNING;
     }
 
     /**
      * 检查比赛是否创建
+     *
      * @return 检查结果
      */
-    public boolean isSet(){
-        return this.runningCompetition != null;
+    public boolean isSet() {
+        return this.status != CompetitionStatus.UNSET;
+    }
+
+    public boolean isFinished(){
+        return this.status == CompetitionStatus.FINISHED;
     }
 
     /**
@@ -83,18 +101,19 @@ public class CompetitionHandler {
      * 将所有队伍的flag设为expired，并写入数据库
      */
     public void roundCheck() {
-        if (!flagMap.isEmpty()){
+        start();
+        if (!flagMap.isEmpty()) {
             statistic();
             flushFlag();
         }
     }
 
-    private void statistic(){
+    private void statistic() {
         Map<Integer, List<Flag>> collect = flagMap.values().stream().filter(Flag::isUsed)
                 .collect(Collectors.groupingBy(Flag::getUsedBy));
         int baseScore = runningCompetition.getScore();
         collect.forEach((k, v) -> {
-            int plusScore = baseScore*v.size();
+            int plusScore = baseScore * v.size();
 
             // 向数据库写入得分
             Team team = teamService.getById(k);
@@ -128,40 +147,80 @@ public class CompetitionHandler {
      *
      * @param teamId  提交该flag的队伍
      * @param flagVal 提交的flag
-     * @return 本次提交是否成功
      */
-    public boolean validFlag(int teamId, String flagVal) {
+    public void validFlag(int teamId, String flagVal) {
+        if (!isRunning()){
+            throw new RoutineException("比赛已结束");
+        }
         // 检查是不是一个flag
         if (!flagMap.containsKey(flagVal)) {
-            return false;
+            throw new RoutineException("这不是一个合法的flag");
         }
-
 
         Flag flag = flagMap.get(flagVal);
         // 检查是否已使用或是自己队伍的flag
-        if (flag.isUsed() || flag.getBelongTo().equals(teamId)) {
-            return false;
+        if (flag.isUsed()) {
+            throw new RoutineException("该flag已被使用");
+        } else if (flag.getBelongTo().equals(teamId)) {
+            throw new RoutineException("不能使用自己的flag");
         } else {
             flag.setUsed(true);
             flag.setUsedBy(teamId);
         }
-
-
-        return true;
     }
 
     public void finishAll() throws SchedulerException {
         roundCheck();
+        teamService.removeAll();
         scheduler.clear();
         kubernetesService.clearResource();
         systemService.finishAll();
-        this.runningCompetition = null;
+        this.status = CompetitionStatus.FINISHED;
     }
 
-    public String getFlagByTeamId(int teamId) {
+    public GameBox gameBoxByTeamId(int teamId) {
+        if (!isRunning()) {
+            return null;
+        }
+        Flag flag = getFlagByTeamId(teamId);
+
+        String title = runningCompetition.getTitle();
+        String entry = kubernetesService.serviceEntry(getId(), teamId);
+        return new GameBox(title, teamService.getById(teamId).getName(),
+                entry, runningCompetition.getScore(), flag.isUsed(), "暂无描述");
+    }
+
+    public boolean isAttacked(int teamId){
+        return getFlagByTeamId(teamId).isUsed();
+    }
+
+    public String getFlagValByTeamId(int teamId) {
         Optional<Flag> first = flagMap.values().stream()
                 .filter(e -> e.getBelongTo().equals(teamId))
                 .findFirst();
         return first.isPresent() ? first.get().getValue() : "";
+    }
+
+    private Flag getFlagByTeamId(int teamId) {
+        Optional<Flag> first = flagMap.values().stream()
+                .filter(e -> e.getBelongTo().equals(teamId))
+                .findFirst();
+        return first.orElse(null);
+    }
+
+    public String getTitle() {
+        return runningCompetition.getTitle();
+    }
+
+
+    @Data
+    @AllArgsConstructor
+    public static class GameBox {
+        private String title;
+        private String teamName;
+        private String entry;
+        private int score;
+        private boolean isAttacked;
+        private String description;
     }
 }

@@ -77,7 +77,7 @@ public class TeamController {
     public ResponseEntity<Response> editTeam(@RequestBody Team team) {
 
 
-        teamService.editTeam(team, competitionHandler.getId());
+        teamService.editTeam(team);
 
         return Response.success();
     }
@@ -85,7 +85,7 @@ public class TeamController {
     @PostMapping("/team/resetPassword")
     public ResponseEntity<Response> resetPass(@RequestBody Team team) {
 
-        teamService.resetPassword(team, competitionHandler.getId());
+        teamService.resetPassword(team);
 
         logService.log(LogLevel.NORMAL, LogKind.MANAGER_OPERATE, "队伍[%s]登录密码已重置", team.getName());
 

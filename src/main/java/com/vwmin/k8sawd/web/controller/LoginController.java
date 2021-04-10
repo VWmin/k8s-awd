@@ -1,14 +1,15 @@
 package com.vwmin.k8sawd.web.controller;
 
 import com.vwmin.k8sawd.web.entity.Manager;
+import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.exception.RoutineException;
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.ManagerService;
+import com.vwmin.k8sawd.web.service.TeamService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author vwmin
@@ -16,25 +17,24 @@ import javax.servlet.http.HttpServletRequest;
  * @date 2021/3/17 18:23
  */
 @RestController
-@RequestMapping("/manager")
 public class LoginController {
 
 
     private final ManagerService managerService;
+    private final TeamService teamService;
+    private final CompetitionHandler competitionHandler;
 
-    public LoginController(ManagerService managerService) {
+    public LoginController(ManagerService managerService, TeamService teamService, CompetitionHandler competitionHandler) {
         this.managerService = managerService;
+        this.teamService = teamService;
+        this.competitionHandler = competitionHandler;
     }
 
-    /**
-     * 登录验证
-     * @param manager 需要参数 name 、 password
-     * @return token
-     */
-    @PostMapping("/login")
-    public ResponseEntity<Response> login(@RequestBody Manager manager){
 
-        if (managerService.login(manager)){
+    @PostMapping("/manager/login")
+    public ResponseEntity<Response> login(@RequestBody Manager manager) {
+
+        if (managerService.login(manager)) {
             // 登录成功 向数据库刷新token
             return Response.success(managerService.refreshToken(manager));
         } else {
@@ -43,11 +43,32 @@ public class LoginController {
         }
     }
 
-    @GetMapping("/logout")
-    public ResponseEntity<Response> logout(HttpServletRequest request){
+    @GetMapping("/manager/logout")
+    public ResponseEntity<Response> logout(@RequestHeader("Authorization") String token) {
 
         // 清空该用户token
-        managerService.clearToken(request.getHeader("Authorization"));
+        managerService.clearToken(token);
+
+        return Response.success("登出成功");
+    }
+
+    @RequestMapping("/login")
+    public ResponseEntity<Response> login(@RequestBody Team team) {
+        if (!competitionHandler.isRunning()) {
+            throw new RoutineException("比赛尚未开始");
+        }
+        if (teamService.login(team)) {
+            return Response.success(teamService.getToken(team));
+        } else {
+            throw new RoutineException(ResponseCode.FAIL, "登录验证失败");
+        }
+
+    }
+
+    @RequestMapping("/logout")
+    public ResponseEntity<Response> playerLogout(@RequestHeader("Authorization") String token) {
+        // 清空该用户token
+        teamService.clearToken(token);
 
         return Response.success("登出成功");
     }

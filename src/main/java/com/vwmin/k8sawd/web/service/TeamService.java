@@ -21,10 +21,19 @@ public interface TeamService extends IService<Team> {
 
     void addTeams(List<Team> teams, int competitionId);
 
-    void editTeam(Team team, int competitionId);
+    void editTeam(Team team);
 
     List<Team> teamsByCompetition(int competitionId);
 
+    void resetPassword(Team team);
 
-    void resetPassword(Team team, int competitionId);
+    boolean login(Team team);
+
+    String getToken(Team team);
+
+    void clearToken(String authorization);
+
+    Team getTeamByToken(String token);
+
+    void removeAll();
 }

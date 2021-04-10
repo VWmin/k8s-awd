@@ -2,7 +2,7 @@ package com.vwmin.k8sawd.web.controller;
 
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
-import com.vwmin.k8sawd.web.service.FlagService;
+import com.vwmin.k8sawd.web.service.TeamService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,25 +18,28 @@ import org.springframework.web.bind.annotation.*;
 public class FlagController {
 
     private final CompetitionHandler competitionHandler;
+    private final TeamService teamService;
 
 
-    public FlagController(CompetitionHandler competitionHandler) {
+    public FlagController(CompetitionHandler competitionHandler, TeamService teamService) {
         this.competitionHandler = competitionHandler;
+        this.teamService = teamService;
     }
 
     @PostMapping("/flag")
-    public ResponseEntity<Response> receiveFlag(@RequestBody FlagJson flag){
-        return Response.success(competitionHandler.validFlag(flag.teamId, flag.flag));
+    public ResponseEntity<Response> receiveFlag(@RequestHeader("Authorization") String token,
+                                                @RequestBody FlagJson flag){
+        competitionHandler.validFlag(teamService.getTeamByToken(token).getId(), flag.flag);
+        return Response.success("提交成功");
     }
 
     @GetMapping("/flag")
     public ResponseEntity<Response> getFlag(@RequestParam int teamId){
-        return Response.success(competitionHandler.getFlagByTeamId(teamId));
+        return Response.success(competitionHandler.getFlagValByTeamId(teamId));
     }
 
     @Data
     private static class FlagJson {
-        private int teamId;
         private String flag;
     }
 
