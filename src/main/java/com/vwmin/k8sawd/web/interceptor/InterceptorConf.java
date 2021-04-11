@@ -11,20 +11,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class InterceptorConf implements WebMvcConfigurer {
-    private final TeamRequestInterceptor teamRequestInterceptor;
     private final ManagerAuthInterceptor managerAuthInterceptor;
 
-    public InterceptorConf(TeamRequestInterceptor teamRequestInterceptor, ManagerAuthInterceptor managerAuthInterceptor) {
-        this.teamRequestInterceptor = teamRequestInterceptor;
+    public InterceptorConf(ManagerAuthInterceptor managerAuthInterceptor) {
         this.managerAuthInterceptor = managerAuthInterceptor;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 对team相关请求做检查，在创建competition前不允许team操作
-//        registry.addInterceptor(teamRequestInterceptor)
-//                .addPathPatterns("/manager/team**")
-//                .addPathPatterns("/manager/team/**");
+
 
 
 //        // 对manager下操作进行权限检查

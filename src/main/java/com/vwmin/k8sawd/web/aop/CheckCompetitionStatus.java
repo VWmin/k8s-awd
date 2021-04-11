@@ -37,7 +37,7 @@ public class CheckCompetitionStatus {
 
     @Before("access()")
     public void doBefore() {
-        log.info("环切测试");
+//        log.info("环切测试");
     }
 
     @Around("access()")
