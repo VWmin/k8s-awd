@@ -3,16 +3,13 @@ package com.vwmin.k8sawd.web.controller.player;
 import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
-import com.vwmin.k8sawd.web.service.KubernetesService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import lombok.Data;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author vwmin
@@ -23,13 +20,11 @@ import java.util.List;
 public class PlayerController {
 
     private final TeamService teamService;
-    private final KubernetesService kubernetesService;
     private final CompetitionHandler competitionHandler;
 
-    public PlayerController(TeamService teamService, KubernetesService kubernetesService,
+    public PlayerController(TeamService teamService,
                             CompetitionHandler competitionHandler) {
         this.teamService = teamService;
-        this.kubernetesService = kubernetesService;
         this.competitionHandler = competitionHandler;
     }
 
@@ -102,4 +97,14 @@ public class PlayerController {
     public ResponseEntity<Response> getTime() {
         return Response.success(competitionHandler.getRound());
     }
+
+
+    @GetMapping("/livelog")
+    public SseEmitter livelog() {
+        SseEmitter sseEmitter = new SseEmitter(1000 * 60 * 5L);
+        competitionHandler.setSseEmitter(sseEmitter);
+        return sseEmitter;
+    }
+
+
 }

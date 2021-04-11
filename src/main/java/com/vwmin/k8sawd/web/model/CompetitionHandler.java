@@ -16,10 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.PreDestroy;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
@@ -46,6 +49,7 @@ public class CompetitionHandler {
     private final SystemService systemService;
     private final KubernetesService kubernetesService;
     private final Scheduler scheduler;
+    private SseEmitter sseEmitter = null;
 
     private CompetitionStatus status = CompetitionStatus.UNSET;
 
@@ -168,6 +172,16 @@ public class CompetitionHandler {
         } else {
             flag.setUsed(true);
             flag.setUsedBy(teamId);
+
+            try {
+                if (sseEmitter != null) {
+                    sseEmitter.send(LiveLogEvent.AttackEvent(teamId + "", flag.getBelongTo() + "", getTitle()));
+                    sseEmitter.complete();
+                }
+            } catch (IOException ie) {
+                ie.printStackTrace();
+                sseEmitter.completeWithError(ie);
+            }
         }
     }
 
@@ -177,6 +191,7 @@ public class CompetitionHandler {
         scheduler.clear();
         kubernetesService.clearResource();
         systemService.finishAll();
+        this.sseEmitter = null;
         this.status = CompetitionStatus.FINISHED;
     }
 
@@ -220,21 +235,29 @@ public class CompetitionHandler {
         return runningCompetition.getTitle();
     }
 
-    public Round getRound(){
+    public Round getRound() {
         Round round = new Round();
         LocalDateTime startTime = runningCompetition.getStartTime();
         LocalDateTime nowTime = LocalDateTime.now();
+
+        round.startTime = startTime.toEpochSecond(ZoneOffset.of("+8"));
+        round.endTime = runningCompetition.getEndTime().toEpochSecond(ZoneOffset.of("+8"));
+        round.nowTime = nowTime.toEpochSecond(ZoneOffset.of("+8"));
 
         long offset = LocalDateTimeUtil.between(startTime, nowTime).getSeconds();
 
         round.roundDuration = 60;
         round.nowRound = offset / round.roundDuration;
         round.roundRemainTime = round.roundDuration - (offset % round.roundDuration);
-        round.status = "测试";
+        round.status = this.status;
 
 
         return round;
 
+    }
+
+    public void setSseEmitter(SseEmitter sseEmitter) {
+        this.sseEmitter = sseEmitter;
     }
 
 
@@ -252,10 +275,15 @@ public class CompetitionHandler {
     @Data
     public static class Round {
 
+        // timestamp
+        private long startTime;
+        private long endTime;
+        private long nowTime;
+
         // 每轮持续时长 s
         private long roundDuration;
         private long nowRound;
         private long roundRemainTime;
-        private String status;
+        private CompetitionStatus status;
     }
 }
