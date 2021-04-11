@@ -55,7 +55,7 @@ public class LoginController {
     }
 
     @RequestMapping("/login")
-    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
+    @ExpectedStatus(expected = {CompetitionStatus.SET, CompetitionStatus.RUNNING, CompetitionStatus.FINISHED})
     public ResponseEntity<Response> login(@RequestBody Team team) {
 
         if (teamService.login(team)) {
@@ -67,10 +67,7 @@ public class LoginController {
     }
 
     @RequestMapping("/logout")
-    public ResponseEntity<Response> playerLogout(@RequestHeader("Authorization") String token) {
-        // 清空该用户token
-        teamService.clearToken(token);
-
+    public ResponseEntity<Response> playerLogout() {
         return Response.success("登出成功");
     }
 }

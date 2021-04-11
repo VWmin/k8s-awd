@@ -45,9 +45,11 @@ public class FlagJob implements Job {
         competitionHandler.roundCheck();
 
         try {
+            // 获得对map的锁
             for (Team team : teams) {
                 kubernetesService.writeFlag(competitionHandler, competitionId, team.getId());
             }
+            // 释放对map的锁
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             ie.printStackTrace();

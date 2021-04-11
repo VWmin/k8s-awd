@@ -76,6 +76,8 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         systemService.setCompetition(competition);
         competitionHandler.setRunningCompetition(competition);
 
+        // 对于新的比赛，清理先前比赛的队伍数据
+        teamService.removeAll();
 
         startAt = LocalDateTimeUtil.now().plusMinutes(1);
 

@@ -32,7 +32,7 @@ public class PlayerController {
 
 
     @GetMapping("/team/info")
-    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
+    @ExpectedStatus(expected = {CompetitionStatus.SET, CompetitionStatus.RUNNING, CompetitionStatus.FINISHED})
     public ResponseEntity<Response> info(@RequestHeader("Authorization") String token) {
         Team teamByToken = teamService.getTeamByToken(token);
         return Response.success(teamByToken);

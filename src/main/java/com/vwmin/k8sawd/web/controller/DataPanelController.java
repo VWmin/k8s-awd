@@ -62,7 +62,6 @@ public class DataPanelController {
         return Response.success(new HashMap<String, String>(){{
             put("title", "这是啥");
             put("language", "zh-CN");
-            put("competitionId", systemService.runningCompetition()+"");
         }});
     }
 

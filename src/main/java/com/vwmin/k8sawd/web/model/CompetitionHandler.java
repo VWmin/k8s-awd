@@ -20,16 +20,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -187,7 +184,7 @@ public class CompetitionHandler {
 
     public void finishAll() throws SchedulerException {
         roundCheck();
-        teamService.removeAll();
+//        teamService.removeAll();
         scheduler.clear();
         kubernetesService.clearResource();
         systemService.finishAll();
@@ -202,19 +199,16 @@ public class CompetitionHandler {
     }
 
     public GameBox gameBoxByTeamId(int teamId) {
-        if (!isRunning()) {
-            return null;
-        }
         Flag flag = getFlagByTeamId(teamId);
 
         String title = runningCompetition.getTitle();
         String entry = kubernetesService.serviceEntry(getId(), teamId);
         return new GameBox(title, teamService.getById(teamId).getName(),
-                entry, runningCompetition.getScore(), flag.isUsed(), "暂无描述");
+                entry, runningCompetition.getScore(), flag != null && flag.isUsed(), "暂无描述");
     }
 
     public boolean isAttacked(int teamId) {
-        return getFlagByTeamId(teamId).isUsed();
+        return isRunning() && getFlagByTeamId(teamId).isUsed();
     }
 
     public String getFlagValByTeamId(int teamId) {
