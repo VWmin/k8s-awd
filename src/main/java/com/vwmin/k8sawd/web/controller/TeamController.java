@@ -1,6 +1,8 @@
 package com.vwmin.k8sawd.web.controller;
 
+import com.vwmin.k8sawd.web.aop.ExpectedStatus;
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.enums.CompetitionStatus;
 import com.vwmin.k8sawd.web.enums.LogKind;
 import com.vwmin.k8sawd.web.enums.LogLevel;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
@@ -39,6 +41,7 @@ public class TeamController {
 
 
     @PostMapping("/team")
+    @ExpectedStatus(expected = {CompetitionStatus.SET})
     public ResponseEntity<Response> addTeam(@RequestBody Team team) {
 
         teamService.addTeam(team, competitionHandler.getId());
@@ -47,6 +50,7 @@ public class TeamController {
     }
 
     @PostMapping("/teams")
+    @ExpectedStatus(expected = {CompetitionStatus.SET})
     public ResponseEntity<Response> addTeams(@RequestBody List<Team> teams) {
         teamService.addTeams(teams, competitionHandler.getId());
 
@@ -62,6 +66,7 @@ public class TeamController {
 
 
     @DeleteMapping("/team")
+    @ExpectedStatus(expected = {CompetitionStatus.SET})
     public ResponseEntity<Response> deleteTeam(@RequestParam("id") int id) {
 
         Team team = teamService.getById(id);
@@ -74,6 +79,7 @@ public class TeamController {
     }
 
     @PutMapping("/team")
+    @ExpectedStatus(expected = {CompetitionStatus.SET})
     public ResponseEntity<Response> editTeam(@RequestBody Team team) {
 
 
@@ -83,6 +89,7 @@ public class TeamController {
     }
 
     @PostMapping("/team/resetPassword")
+    @ExpectedStatus(expected = {CompetitionStatus.SET})
     public ResponseEntity<Response> resetPass(@RequestBody Team team) {
 
         teamService.resetPassword(team);
@@ -94,6 +101,7 @@ public class TeamController {
     }
 
     @GetMapping("/teams")
+    @ExpectedStatus(expected = {CompetitionStatus.SET, CompetitionStatus.RUNNING, CompetitionStatus.FINISHED})
     public ResponseEntity<Response> teams() {
 
         return Response.success(teamService.teamsByCompetition(competitionHandler.getId()));
@@ -101,6 +109,7 @@ public class TeamController {
 
 
     @GetMapping("/team/rank")
+    @ExpectedStatus(expected = {CompetitionStatus.SET, CompetitionStatus.RUNNING, CompetitionStatus.FINISHED})
     public ResponseEntity<Response> rank(){
         List<Team> teams = teamService.teamsByCompetition(competitionHandler.getId());
         teams.sort(Comparator.comparing(Team::getScore).reversed());
@@ -109,6 +118,7 @@ public class TeamController {
     }
 
     @PostMapping("/team/uploadLogo")
+    @ExpectedStatus(expected = {CompetitionStatus.SET})
     public ResponseEntity<Response> uploadPicture(@RequestParam MultipartFile picture){
         return Response.success(uploadLogoService.checkAndSave(picture));
     }

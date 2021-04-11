@@ -22,9 +22,9 @@ public class InterceptorConf implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 对team相关请求做检查，在创建competition前不允许team操作
-        registry.addInterceptor(teamRequestInterceptor)
-                .addPathPatterns("/manager/team**")
-                .addPathPatterns("/manager/team/**");
+//        registry.addInterceptor(teamRequestInterceptor)
+//                .addPathPatterns("/manager/team**")
+//                .addPathPatterns("/manager/team/**");
 
 
 //        // 对manager下操作进行权限检查

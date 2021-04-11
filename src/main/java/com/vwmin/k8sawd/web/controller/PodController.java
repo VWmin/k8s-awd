@@ -1,6 +1,8 @@
 package com.vwmin.k8sawd.web.controller;
 
+import com.vwmin.k8sawd.web.aop.ExpectedStatus;
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.enums.CompetitionStatus;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.model.ResponseCode;
@@ -42,11 +44,8 @@ public class PodController {
     }
 
     @GetMapping("/services")
+    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
     public ResponseEntity<Response> services() {
-        if (!competitionHandler.isRunning()){
-            // 没有正在进行的比赛
-            return Response.error(ResponseCode.FAIL, "没有正在进行的比赛");
-        }
         int competitionId = competitionHandler.getRunningCompetition().getId();
         List<Team> teams = teamService.teamsByCompetition(competitionId);
 

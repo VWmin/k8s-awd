@@ -237,21 +237,21 @@ public class CompetitionHandler {
 
     public Round getRound() {
         Round round = new Round();
-        LocalDateTime startTime = runningCompetition.getStartTime();
-        LocalDateTime nowTime = LocalDateTime.now();
+        if (isRunning()){
+            LocalDateTime startTime = runningCompetition.getStartTime();
+            LocalDateTime nowTime = LocalDateTime.now();
 
-        round.startTime = startTime.toEpochSecond(ZoneOffset.of("+8"));
-        round.endTime = runningCompetition.getEndTime().toEpochSecond(ZoneOffset.of("+8"));
-        round.nowTime = nowTime.toEpochSecond(ZoneOffset.of("+8"));
+            round.startTime = startTime.toEpochSecond(ZoneOffset.of("+8"));
+            round.endTime = runningCompetition.getEndTime().toEpochSecond(ZoneOffset.of("+8"));
+            round.nowTime = nowTime.toEpochSecond(ZoneOffset.of("+8"));
 
-        long offset = LocalDateTimeUtil.between(startTime, nowTime).getSeconds();
+            long offset = LocalDateTimeUtil.between(startTime, nowTime).getSeconds();
 
-        round.roundDuration = 60;
-        round.nowRound = offset / round.roundDuration;
-        round.roundRemainTime = round.roundDuration - (offset % round.roundDuration);
+            round.roundDuration = 60;
+            round.nowRound = offset / round.roundDuration;
+            round.roundRemainTime = round.roundDuration - (offset % round.roundDuration);
+        }
         round.status = this.status;
-
-
         return round;
 
     }

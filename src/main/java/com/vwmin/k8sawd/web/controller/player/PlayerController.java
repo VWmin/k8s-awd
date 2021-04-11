@@ -1,6 +1,8 @@
 package com.vwmin.k8sawd.web.controller.player;
 
+import com.vwmin.k8sawd.web.aop.ExpectedStatus;
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.enums.CompetitionStatus;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.TeamService;
@@ -30,12 +32,14 @@ public class PlayerController {
 
 
     @GetMapping("/team/info")
+    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
     public ResponseEntity<Response> info(@RequestHeader("Authorization") String token) {
         Team teamByToken = teamService.getTeamByToken(token);
         return Response.success(teamByToken);
     }
 
     @GetMapping("/team/gameboxes")
+    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
     public ResponseEntity<Response> service(@RequestHeader("Authorization") String token) {
         Team teamByToken = teamService.getTeamByToken(token);
         return Response.success(new ArrayList<CompetitionHandler.GameBox>() {{
@@ -44,6 +48,7 @@ public class PlayerController {
     }
 
     @GetMapping("/team/gameboxes/all")
+    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
     public ResponseEntity<Response> services(@RequestHeader("Authorization") String token) {
         Team teamByToken = teamService.getTeamByToken(token);
         Integer competitionId = teamByToken.getCompetitionId();
@@ -60,6 +65,7 @@ public class PlayerController {
 
 
     @GetMapping("/team/rank")
+    @ExpectedStatus(expected = {CompetitionStatus.RUNNING, CompetitionStatus.FINISHED})
     public ResponseEntity<Response> rank() {
         List<Team> teams = teamService.list();
         teams.sort(Comparator.comparing(Team::getScore).reversed());

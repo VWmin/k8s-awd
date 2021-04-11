@@ -1,5 +1,7 @@
 package com.vwmin.k8sawd.web.controller;
 
+import com.vwmin.k8sawd.web.aop.ExpectedStatus;
+import com.vwmin.k8sawd.web.enums.CompetitionStatus;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.TeamService;
@@ -27,6 +29,7 @@ public class FlagController {
     }
 
     @PostMapping("/flag")
+    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
     public ResponseEntity<Response> receiveFlag(@RequestHeader("Authorization") String token,
                                                 @RequestBody FlagJson flag){
         competitionHandler.validFlag(teamService.getTeamByToken(token).getId(), flag.flag);
@@ -34,6 +37,7 @@ public class FlagController {
     }
 
     @GetMapping("/flag")
+    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
     public ResponseEntity<Response> getFlag(@RequestParam int teamId){
         return Response.success(competitionHandler.getFlagValByTeamId(teamId));
     }

@@ -1,6 +1,8 @@
 package com.vwmin.k8sawd.web.controller;
 
+import com.vwmin.k8sawd.web.aop.ExpectedStatus;
 import com.vwmin.k8sawd.web.entity.Competition;
+import com.vwmin.k8sawd.web.enums.CompetitionStatus;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.CompetitionService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ public class CompetitionController {
 
 
     @PostMapping("/competition")
+    @ExpectedStatus(expected = {CompetitionStatus.UNSET, CompetitionStatus.FINISHED})
     public ResponseEntity<Response> create(@RequestBody Competition competition) throws SchedulerException {
         log.info("{}", competition);
 

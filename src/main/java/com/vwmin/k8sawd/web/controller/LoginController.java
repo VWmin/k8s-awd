@@ -1,7 +1,9 @@
 package com.vwmin.k8sawd.web.controller;
 
+import com.vwmin.k8sawd.web.aop.ExpectedStatus;
 import com.vwmin.k8sawd.web.entity.Manager;
 import com.vwmin.k8sawd.web.entity.Team;
+import com.vwmin.k8sawd.web.enums.CompetitionStatus;
 import com.vwmin.k8sawd.web.exception.RoutineException;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
@@ -53,12 +55,13 @@ public class LoginController {
     }
 
     @RequestMapping("/login")
+    @ExpectedStatus(expected = {CompetitionStatus.RUNNING})
     public ResponseEntity<Response> login(@RequestBody Team team) {
 
-        if (competitionHandler.isRunning() && teamService.login(team)) {
+        if (teamService.login(team)) {
             return Response.success(teamService.getToken(team));
         } else {
-            throw new RoutineException(ResponseCode.FAIL, "登录失败");
+            throw new RoutineException(ResponseCode.FAIL, "登录验证失败");
         }
 
     }
