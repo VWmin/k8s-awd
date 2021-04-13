@@ -136,3 +136,23 @@ CREATE TABLE `bulletin`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1 comment '公告表';
+
+
+-- ----------------------------
+-- 镜像表
+-- ----------------------------
+DROP TABLE IF EXISTS `image`;
+CREATE TABLE `image`
+(
+
+    `id`          bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `created_at`  datetime   NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`  datetime COMMENT '更新时间',
+
+
+    `name`        varchar(255) DEFAULT '' COMMENT '名称',
+    `description` varchar(255) DEFAULT '' COMMENT '描述',
+
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1 comment '镜像表';
