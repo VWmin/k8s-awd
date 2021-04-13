@@ -3,6 +3,7 @@ package com.vwmin.k8sawd.web.controller;
 import com.vwmin.k8sawd.web.entity.Image;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.ImageService;
+import com.vwmin.k8sawd.web.service.KubernetesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +18,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/manager")
 public class ImageController {
     private final ImageService imageService;
+    private final KubernetesService kubernetesService;
+    private int runningDemo;
 
-    public ImageController(ImageService imageService) {
+    public ImageController(ImageService imageService, KubernetesService kubernetesService) {
         this.imageService = imageService;
+        this.kubernetesService = kubernetesService;
+        stopDemo();
     }
 
     @PostMapping("/image")
@@ -48,8 +53,20 @@ public class ImageController {
     @GetMapping("/image/demo")
     public ResponseEntity<Response> demo(@RequestParam int id) {
         Image image = imageService.getById(id);
-        log.info("{}", image);
-
+        kubernetesService.demo(image.getName(), image.getPort());
+        runningDemo = id;
         return Response.success();
+    }
+
+    @DeleteMapping("/image/demo")
+    public ResponseEntity<Response> stopDemo() {
+        kubernetesService.stopDemo();
+        runningDemo = -1;
+        return Response.success();
+    }
+
+    @GetMapping("/image/runningDemo")
+    public ResponseEntity<Response> runningDemo(){
+        return Response.success(runningDemo);
     }
 }

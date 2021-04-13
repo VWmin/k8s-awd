@@ -36,7 +36,8 @@ public class DeploymentJob implements Job {
 
 
         for (Team team : teams){
-            kubernetesService.deploy(competitionId, team.getId());
+            // fixme
+            kubernetesService.deploy(competitionId, team.getId(), "awd:1.0");
         }
     }
 }

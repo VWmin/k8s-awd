@@ -12,7 +12,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("image")
-public class Image extends BaseEntity{
+public class Image extends BaseEntity {
     private String name;
+    private int port;
     private String description;
 }

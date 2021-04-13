@@ -151,6 +151,7 @@ CREATE TABLE `image`
 
 
     `name`        varchar(255) DEFAULT '' COMMENT '名称',
+    `port`        int          DEFAULT NULL COMMENT '容器端口',
     `description` varchar(255) DEFAULT '' COMMENT '描述',
 
     PRIMARY KEY (`id`)

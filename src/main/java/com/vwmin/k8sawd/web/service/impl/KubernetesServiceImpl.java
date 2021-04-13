@@ -42,72 +42,13 @@ public class KubernetesServiceImpl implements KubernetesService {
     @Override
     public String serviceEntry(int competitionId, int teamId) {
         String appName = nameRule(competitionId, teamId);
-        return "http://121.36.230.118:30232/" + appName + "/";
+        return "http://121.36.230.118:30232/deployment/" + appName + "/";
     }
 
     @Override
-    public void deploy(int competitionId, int teamId) {
+    public void deploy(int competitionId, int teamId, String imageName) {
         String appName = nameRule(competitionId, teamId);
-        // 创建一个deployment
-        client.apps().deployments().create(new DeploymentBuilder()
-                .withNewMetadata()
-                .withName(appName + "-deployment")
-                .endMetadata()
-                .withNewSpec()
-                .withReplicas(1)
-                .withNewSelector()
-                .addToMatchLabels("app", appName)
-                .endSelector()
-                .withNewTemplate()
-                .withNewMetadata()
-                .addToLabels("app", appName)
-                .endMetadata()
-                .withNewSpec()
-                .addNewContainer()
-                .withName("awd-docker")
-                .withImage("awd:1.0")
-                .withPorts(new ContainerPortBuilder().withContainerPort(80).build())
-                .endContainer()
-                .endSpec()
-                .endTemplate()
-                .endSpec()
-
-                .build()
-        );
-
-        // 创建一个service
-        client.services().create(new ServiceBuilder()
-                        .withNewMetadata()
-                        .withName(appName + "-service")
-                        .endMetadata()
-                        .withNewSpec()
-                        .addToSelector("app", appName)
-//                    .withNewType("NodePort") //指定宿主机上绑定端口
-                        .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
-//                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
-                        .endSpec()
-
-                        .build()
-        );
-
-        // 创建一个Ingress
-        client.network().ingresses().create(new IngressBuilder()
-                .withNewMetadata()
-                .withName(appName + "-ingress")
-                .addToAnnotations("nginx.ingress.kubernetes.io/rewrite-target", "/$2")
-                .endMetadata()
-                .withNewSpec()
-                .addNewRule()
-                .withNewHttp()
-                .addNewPath()
-                .withPath("/" + appName + "(/|$)(.*)").withNewBackend().withServiceName(appName + "-service").withServicePort(new IntOrString(80)).endBackend()
-                .endPath()
-                .endHttp()
-                .endRule()
-                .endSpec()
-
-                .build()
-        );
+        runSingle(appName, imageName, 80);
     }
 
     @Override
@@ -157,6 +98,17 @@ public class KubernetesServiceImpl implements KubernetesService {
         execWatch.close();
     }
 
+    @Override
+    public void demo(String imageName, int targetPort) {
+        stopSingle("awd-demo");
+        runSingle("awd-demo", imageName, targetPort);
+    }
+
+    @Override
+    public void stopDemo() {
+        stopSingle("awd-demo");
+    }
+
     @Slf4j
     private static class WriteFlagListener implements ExecListener {
         private final CountDownLatch execLatch;
@@ -181,6 +133,75 @@ public class KubernetesServiceImpl implements KubernetesService {
             log.trace("执行完成, code: {}", code);
             execLatch.countDown();
         }
+    }
+
+    private void runSingle(String appName, String imageName, int targetPort){
+        // 创建一个deployment
+        client.apps().deployments().create(new DeploymentBuilder()
+                .withNewMetadata()
+                .withName(appName + "-deployment")
+                .endMetadata()
+                .withNewSpec()
+                .withReplicas(1)
+                .withNewSelector()
+                .addToMatchLabels("app", appName)
+                .endSelector()
+                .withNewTemplate()
+                .withNewMetadata()
+                .addToLabels("app", appName)
+                .endMetadata()
+                .withNewSpec()
+                .addNewContainer()
+                .withName(appName + "-docker")
+                .withImage(imageName)
+                .withPorts(new ContainerPortBuilder().withContainerPort(targetPort).build())
+                .endContainer()
+                .endSpec()
+                .endTemplate()
+                .endSpec()
+
+                .build()
+        );
+
+        // 创建一个service
+        client.services().create(new ServiceBuilder()
+                        .withNewMetadata()
+                        .withName(appName + "-service")
+                        .endMetadata()
+                        .withNewSpec()
+                        .addToSelector("app", appName)
+//                    .withNewType("NodePort") //指定宿主机上绑定端口
+                        .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(targetPort).build())
+//                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
+                        .endSpec()
+
+                        .build()
+        );
+
+        // 创建一个Ingress
+        client.network().ingresses().create(new IngressBuilder()
+                .withNewMetadata()
+                .withName(appName + "-ingress")
+                .addToAnnotations("nginx.ingress.kubernetes.io/rewrite-target", "/$2")
+                .endMetadata()
+                .withNewSpec()
+                .addNewRule()
+                .withNewHttp()
+                .addNewPath()
+                .withPath("/deployment/" + appName + "(/|$)(.*)").withNewBackend().withServiceName(appName + "-service").withServicePort(new IntOrString(80)).endBackend()
+                .endPath()
+                .endHttp()
+                .endRule()
+                .endSpec()
+
+                .build()
+        );
+    }
+
+    private void stopSingle(String appName){
+        client.apps().deployments().withName(appName + "-deployment").delete();
+        client.services().withName(appName + "-service").delete();
+        client.network().ingresses().withName(appName + "-ingress").delete();
     }
 
     private String nameRule(int competitionId, int teamId) {
