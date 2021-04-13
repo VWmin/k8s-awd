@@ -34,6 +34,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private final SystemService systemService;
     private final TeamService teamService;
     private final BulletinService bulletinService;
+    private final LogService logService;
     private final Scheduler scheduler;
     private final KubernetesService kubernetesService;
     private final CompetitionHandler competitionHandler;
@@ -43,11 +44,12 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private LocalDateTime startAt;
 
     public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
-                                  BulletinService bulletinService, Scheduler scheduler,
+                                  BulletinService bulletinService, LogService logService, Scheduler scheduler,
                                   KubernetesService kubernetesService, CompetitionHandler competitionHandler) {
         this.systemService = systemService;
         this.teamService = teamService;
         this.bulletinService = bulletinService;
+        this.logService = logService;
         this.scheduler = scheduler;
         this.kubernetesService = kubernetesService;
         this.competitionHandler = competitionHandler;
@@ -82,6 +84,9 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
         // 对于新的比赛，清理先前比赛的公告数据
         bulletinService.removeAll();
+
+        // 对于新的比赛，清理先前的日志
+        logService.removeALl();
 
         startAt = LocalDateTimeUtil.now().plusMinutes(1);
 

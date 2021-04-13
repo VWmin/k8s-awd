@@ -1,6 +1,7 @@
 package com.vwmin.k8sawd.web.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Log;
 import com.vwmin.k8sawd.web.enums.LogKind;
@@ -38,5 +39,10 @@ public class LogServiceImpl extends ServiceImpl<LogMapper, Log> implements LogSe
         log.info(content);
 
         save(new Log(level.val(), kind.toString(), content));
+    }
+
+    @Override
+    public void removeALl() {
+        remove(new QueryWrapper<>());
     }
 }

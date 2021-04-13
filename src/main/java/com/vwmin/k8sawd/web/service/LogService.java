@@ -23,4 +23,6 @@ public interface LogService extends IService<Log> {
 
     void log(LogLevel level, LogKind kind, String format, Object... args);
 
+    void removeALl();
+
 }
