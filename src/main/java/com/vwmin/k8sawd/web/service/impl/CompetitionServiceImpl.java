@@ -2,7 +2,6 @@ package com.vwmin.k8sawd.web.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
-import cn.hutool.core.lang.Pair;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.exception.RoutineException;
@@ -13,7 +12,6 @@ import com.vwmin.k8sawd.web.service.*;
 import com.vwmin.k8sawd.web.task.DeploymentJob;
 import com.vwmin.k8sawd.web.task.FlagJob;
 import com.vwmin.k8sawd.web.task.GameCheckJob;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.stereotype.Service;
@@ -35,6 +33,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     private final SystemService systemService;
     private final TeamService teamService;
+    private final BulletinService bulletinService;
     private final Scheduler scheduler;
     private final KubernetesService kubernetesService;
     private final CompetitionHandler competitionHandler;
@@ -44,9 +43,11 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private LocalDateTime startAt;
 
     public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
-                                  Scheduler scheduler, KubernetesService kubernetesService, CompetitionHandler competitionHandler) {
+                                  BulletinService bulletinService, Scheduler scheduler,
+                                  KubernetesService kubernetesService, CompetitionHandler competitionHandler) {
         this.systemService = systemService;
         this.teamService = teamService;
+        this.bulletinService = bulletinService;
         this.scheduler = scheduler;
         this.kubernetesService = kubernetesService;
         this.competitionHandler = competitionHandler;
@@ -78,6 +79,9 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
         // 对于新的比赛，清理先前比赛的队伍数据
         teamService.removeAll();
+
+        // 对于新的比赛，清理先前比赛的公告数据
+        bulletinService.removeAll();
 
         startAt = LocalDateTimeUtil.now().plusMinutes(1);
 

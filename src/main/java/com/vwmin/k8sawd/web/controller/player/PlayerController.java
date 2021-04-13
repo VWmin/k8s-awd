@@ -5,6 +5,7 @@ import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.enums.CompetitionStatus;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
+import com.vwmin.k8sawd.web.service.BulletinService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import lombok.Data;
 import org.springframework.http.*;
@@ -23,11 +24,13 @@ public class PlayerController {
 
     private final TeamService teamService;
     private final CompetitionHandler competitionHandler;
+    private final BulletinService bulletinService;
 
     public PlayerController(TeamService teamService,
-                            CompetitionHandler competitionHandler) {
+                            CompetitionHandler competitionHandler, BulletinService bulletinService) {
         this.teamService = teamService;
         this.competitionHandler = competitionHandler;
+        this.bulletinService = bulletinService;
     }
 
 
@@ -106,10 +109,17 @@ public class PlayerController {
 
 
     @GetMapping("/livelog")
+    @ExpectedStatus(expected = {CompetitionStatus.SET, CompetitionStatus.RUNNING, CompetitionStatus.FINISHED})
     public SseEmitter livelog() {
         SseEmitter sseEmitter = new SseEmitter(1000 * 60 * 5L);
         competitionHandler.setSseEmitter(sseEmitter);
         return sseEmitter;
+    }
+
+    @GetMapping("/bulletins")
+    @ExpectedStatus(expected = {CompetitionStatus.SET, CompetitionStatus.RUNNING, CompetitionStatus.FINISHED})
+    public ResponseEntity<Response> retrieve() {
+        return Response.success(bulletinService.list());
     }
 
 

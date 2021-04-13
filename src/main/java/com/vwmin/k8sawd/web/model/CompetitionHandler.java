@@ -172,7 +172,8 @@ public class CompetitionHandler {
 
             try {
                 if (sseEmitter != null) {
-                    sseEmitter.send(LiveLogEvent.AttackEvent(teamId + "", flag.getBelongTo() + "", getTitle()));
+                    sseEmitter.send(LiveLogEvent.AttackEvent(teamService.getById(teamId).getName(),
+                            teamService.getById(flag.getBelongTo()).getName(), getTitle()));
                     sseEmitter.complete();
                 }
             } catch (IOException ie) {

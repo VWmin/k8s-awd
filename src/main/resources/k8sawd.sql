@@ -116,3 +116,23 @@ CREATE TABLE `log`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1 comment '日志表';
+
+
+-- ----------------------------
+-- 公告表
+-- ----------------------------
+DROP TABLE IF EXISTS `bulletin`;
+CREATE TABLE `bulletin`
+(
+
+    `id`         bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `created_at` datetime   NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` datetime COMMENT '更新时间',
+
+
+    `title`      varchar(255) DEFAULT '' COMMENT '标题',
+    `content`    varchar(255) DEFAULT '' COMMENT '内容',
+
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1 comment '公告表';
