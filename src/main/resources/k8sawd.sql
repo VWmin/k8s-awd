@@ -51,7 +51,7 @@ CREATE TABLE `flag`
 
     `value`      varchar(255) NOT NULL DEFAULT '' COMMENT 'flag值',
     `is_used`    tinyint(1)   NULL     DEFAULT NULL COMMENT '该flag是否被使用',
-    `belong_to`  int          NOT NULL DEFAULT 0 COMMENT 'flag归属的队伍',
+    `belong_to`  int          NOT NULL DEFAULT NULL COMMENT 'flag归属的队伍',
     `used_by`    int          NULL     DEFAULT NULL COMMENT '哪个队伍使用了该flag',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
@@ -96,7 +96,7 @@ CREATE TABLE `manager`
 
 ## 创建默认管理账号
 INSERT INTO `manager`
-VALUES (0, sysdate(), sysdate(), 'admin', 'admin', '');
+VALUES (0, sysdate(), sysdate(), 'admin', md5('admin'), '');
 
 -- ----------------------------
 -- 日志表

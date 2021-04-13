@@ -1,6 +1,8 @@
 package com.vwmin.k8sawd.web.service.impl;
 
+import cn.hutool.core.util.HashUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -32,7 +34,8 @@ public class ManagerServiceImpl extends ServiceImpl<ManagerMapper, Manager> impl
             throw new RoutineException("该名称已被使用");
         }
 
-        // todo 密码hash
+
+        manager.setPassword(DigestUtil.md5Hex(manager.getPassword()));
 
         save(manager);
     }
@@ -65,7 +68,7 @@ public class ManagerServiceImpl extends ServiceImpl<ManagerMapper, Manager> impl
         // 在数据库中查询是否存在用户名、密码匹配的管理账户
         LambdaQueryWrapper<Manager> condition = new LambdaQueryWrapper<>();
         condition.eq(Manager::getName, manager.getName())
-                .eq(Manager::getPassword, manager.getPassword())
+                .eq(Manager::getPassword, DigestUtil.md5Hex(manager.getPassword()))
                 .last("limit 1");
         return count(condition) == 1;
     }

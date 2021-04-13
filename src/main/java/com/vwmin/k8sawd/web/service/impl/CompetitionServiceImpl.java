@@ -69,7 +69,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         }
 
         // 检查起止时间适合符合语义
-//        checkTime(competition.getStartTime(), competition.getEndTime());
+        checkTime(competition.getStartTime(), competition.getEndTime());
 
         // 写入记录，并设置为alive
         save(competition);
@@ -116,11 +116,10 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         job.getJobDataMap().put("kubernetesService", kubernetesService);
         job.getJobDataMap().put("competitionHandler", competitionHandler);
         job.getJobDataMap().put("competitionId", competition.getId());
-        // fixme: 是不是应该再创建一个定时任务用来给这些任务提供team参数
         job.getJobDataMap().put("teamService", teamService);
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
-                .startAt(localDateTime2Date(startAt))
+                .startAt(localDateTime2Date(competition.getStartTime()))
                 .endAt(localDateTime2Date(competition.getEndTime()))
                 .withSchedule(
                         SimpleScheduleBuilder.simpleSchedule()
@@ -142,7 +141,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         job.getJobDataMap().put("competitionId", competition.getId());
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
-                .startAt(localDateTime2Date(startAt))
+                .startAt(localDateTime2Date(competition.getStartTime()))
                 .withSchedule(
                         SimpleScheduleBuilder.simpleSchedule()
                                 .withIntervalInSeconds(0)
@@ -170,8 +169,8 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
         // 开始时间至少在当前时间 1h 后
         Duration fromNow = LocalDateTimeUtil.between(nowTime, startTime);
-        if (fromNow.toHours() < 1) {
-            throw new RoutineException(ResponseCode.FAIL, "开始时间至少在当前时间 1h 后");
+        if (fromNow.toMinutes() < 1) {
+            throw new RoutineException(ResponseCode.FAIL, "开始时间至少在当前时间 1min 后");
         }
 
         // 结束时间至少在开始时间后
