@@ -45,7 +45,9 @@ public class TeamController {
     public ResponseEntity<Response> addTeam(@RequestBody Team team) {
 
         teamService.addTeam(team, competitionHandler.getId());
-
+        logService.log(LogLevel.NORMAL, LogKind.MANAGER_OPERATE,
+                "队伍[%s]创建成功", team.getName()
+        );
         return Response.success();
     }
 
@@ -55,10 +57,10 @@ public class TeamController {
         teamService.addTeams(teams, competitionHandler.getId());
 
         StringBuilder logTeamNames = new StringBuilder();
-        teams.stream().map(Team::getName).forEach(v -> logTeamNames.append(v).append("、"));
+        teams.stream().map(Team::getName).forEach(v -> logTeamNames.append("[").append(v).append("] "));
 
         logService.log(LogLevel.NORMAL, LogKind.MANAGER_OPERATE,
-                "队伍[%s]创建成功，共计：%d", logTeamNames.deleteCharAt(logTeamNames.length()-1).toString(), teams.size()
+                "队伍%s创建成功，共计：%d", logTeamNames.toString(), teams.size()
         );
 
         return Response.success(teams);
@@ -72,7 +74,7 @@ public class TeamController {
         Team team = teamService.getById(id);
         teamService.removeById(id);
         logService.log(LogLevel.NORMAL, LogKind.MANAGER_OPERATE,
-                "队伍[%s(%d)]已删除.", team.getName(), team.getId()
+                "队伍[%s]已删除.", team.getName()
         );
 
         return Response.success("队伍删除成功");
@@ -94,7 +96,8 @@ public class TeamController {
 
         teamService.resetPassword(team);
 
-        logService.log(LogLevel.NORMAL, LogKind.MANAGER_OPERATE, "队伍[%s]登录密码已重置", team.getName());
+        logService.log(LogLevel.NORMAL, LogKind.MANAGER_OPERATE,
+                "队伍[%s]登录密码已重置", team.getName());
 
 
         return Response.success(team.getPassword());

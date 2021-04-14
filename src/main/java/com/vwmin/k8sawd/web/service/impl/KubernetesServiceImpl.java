@@ -1,8 +1,11 @@
 package com.vwmin.k8sawd.web.service.impl;
 
 import com.vwmin.k8sawd.web.entity.Image;
+import com.vwmin.k8sawd.web.enums.LogKind;
+import com.vwmin.k8sawd.web.enums.LogLevel;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.service.KubernetesService;
+import com.vwmin.k8sawd.web.service.LogService;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1beta1.IngressBuilder;
@@ -28,9 +31,11 @@ import java.util.concurrent.TimeUnit;
 public class KubernetesServiceImpl implements KubernetesService {
 
     private final KubernetesClient client;
+    private final LogService logService;
 
-    public KubernetesServiceImpl(KubernetesClient client) {
+    public KubernetesServiceImpl(KubernetesClient client, LogService logService) {
         this.client = client;
+        this.logService = logService;
     }
 
     @Override
@@ -71,7 +76,7 @@ public class KubernetesServiceImpl implements KubernetesService {
 
         // 创建一个flag
         String flagVal = UUID.randomUUID().toString();
-        log.info("{}预计写入flag[{}]", appName, flagVal);
+        log.trace("{}预计写入flag[{}]", appName, flagVal);
 
         // 计时器
         final CountDownLatch execLatch = new CountDownLatch(1);
@@ -197,6 +202,9 @@ public class KubernetesServiceImpl implements KubernetesService {
 
                 .build()
         );
+
+        logService.log(LogLevel.NORMAL, LogKind.SYSTEM,
+                "Pod[%s:%s]已创建", appName, "http://121.36.230.118:30232/deployment/" + appName + "/");
     }
 
     private void stopSingle(String appName){

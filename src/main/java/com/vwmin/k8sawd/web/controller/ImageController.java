@@ -1,9 +1,12 @@
 package com.vwmin.k8sawd.web.controller;
 
 import com.vwmin.k8sawd.web.entity.Image;
+import com.vwmin.k8sawd.web.enums.LogKind;
+import com.vwmin.k8sawd.web.enums.LogLevel;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.ImageService;
 import com.vwmin.k8sawd.web.service.KubernetesService;
+import com.vwmin.k8sawd.web.service.LogService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +21,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/manager")
 public class ImageController {
     private final ImageService imageService;
+    private final LogService logService;
     private final KubernetesService kubernetesService;
     private int runningDemo;
 
-    public ImageController(ImageService imageService, KubernetesService kubernetesService) {
+    public ImageController(ImageService imageService, LogService logService, KubernetesService kubernetesService) {
         this.imageService = imageService;
+        this.logService = logService;
         this.kubernetesService = kubernetesService;
         stopDemo();
     }
@@ -79,6 +84,8 @@ public class ImageController {
     public ResponseEntity<Response> selectImage(@RequestParam int id){
         Image image = imageService.getById(id);
         imageService.setImage(image);
+        logService.log(LogLevel.IMPORTANT, LogKind.MANAGER_OPERATE,
+                "已选择镜像[ %s ], 将在下一次比赛启动时生效", image.getName());
         return Response.success("已选择镜像[ " + image.getName() + " ], 将在下一次比赛启动时生效");
     }
 

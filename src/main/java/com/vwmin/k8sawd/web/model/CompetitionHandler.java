@@ -5,11 +5,10 @@ import com.vwmin.k8sawd.web.entity.Competition;
 import com.vwmin.k8sawd.web.entity.Flag;
 import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.enums.CompetitionStatus;
+import com.vwmin.k8sawd.web.enums.LogKind;
+import com.vwmin.k8sawd.web.enums.LogLevel;
 import com.vwmin.k8sawd.web.exception.RoutineException;
-import com.vwmin.k8sawd.web.service.FlagService;
-import com.vwmin.k8sawd.web.service.KubernetesService;
-import com.vwmin.k8sawd.web.service.SystemService;
-import com.vwmin.k8sawd.web.service.TeamService;
+import com.vwmin.k8sawd.web.service.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +40,11 @@ public class CompetitionHandler {
     // 需要被CompetitionService初始化
     private Competition runningCompetition;
     private final ConcurrentHashMap<String, Flag> flagMap;
+    private final ConcurrentHashMap<Integer, String> teamNameMap;
     private final FlagService flagService;
     private final TeamService teamService;
     private final SystemService systemService;
+    private final LogService logService;
     private final KubernetesService kubernetesService;
     private final Scheduler scheduler;
     private SseEmitter sseEmitter = null;
@@ -52,14 +53,17 @@ public class CompetitionHandler {
 
 
     public CompetitionHandler(FlagService flagService, TeamService teamService,
-                              SystemService systemService, KubernetesService kubernetesService, Scheduler scheduler) {
+                              SystemService systemService, LogService logService,
+                              KubernetesService kubernetesService, Scheduler scheduler) {
         this.flagService = flagService;
         this.teamService = teamService;
         this.systemService = systemService;
+        this.logService = logService;
         this.kubernetesService = kubernetesService;
         this.scheduler = scheduler;
         runningCompetition = null;
         flagMap = new ConcurrentHashMap<>();
+        teamNameMap = new ConcurrentHashMap<>();
     }
 
     public Competition getRunningCompetition() {
@@ -73,6 +77,9 @@ public class CompetitionHandler {
     public void setRunningCompetition(Competition runningCompetition) {
         this.runningCompetition = runningCompetition;
         this.status = CompetitionStatus.SET;
+        logService.log(LogLevel.IMPORTANT, LogKind.SYSTEM,
+                "比赛[%s]已设置，将于[%s]开始，预计结束于[%s]",
+                runningCompetition.getTitle(), runningCompetition.getStartTime(), runningCompetition.getEndTime());
     }
 
     public CompetitionStatus status() {
@@ -105,6 +112,16 @@ public class CompetitionHandler {
      */
     public void roundCheck() {
         start();
+
+        // 设置队伍缓存
+        if (teamNameMap.isEmpty()) {
+            List<Team> teams = teamService.teamsByCompetition(getId());
+            for (Team team : teams) {
+                teamNameMap.put(team.getId(), team.getName());
+            }
+        }
+
+        // 存在flag记录则统计
         if (!flagMap.isEmpty()) {
             statistic();
             flushFlag();
@@ -123,8 +140,10 @@ public class CompetitionHandler {
             team.plusScore(plusScore);
             teamService.updateById(team);
 
-            log.info("队伍{}，本轮得分：{}", k, plusScore);
+            logService.log(LogLevel.NORMAL, LogKind.SYSTEM,
+                    "Round[]，队伍[%s]，得分：%d", team.getName(), plusScore);
         });
+        logService.log(LogLevel.WARNING, LogKind.SYSTEM, "第fixme轮统计完成.");
     }
 
     public void flushFlag() {
@@ -140,6 +159,8 @@ public class CompetitionHandler {
      * @param teamId  team
      */
     public void updateFlag(int teamId, String flagVal) {
+        logService.log(LogLevel.NORMAL, LogKind.SYSTEM,
+                "Round[]，队伍[%s]，生成Flag[%s]", teamNameMap.get(teamId), flagVal);
         flagMap.put(flagVal, new Flag(teamId, flagVal));
     }
 
@@ -170,10 +191,15 @@ public class CompetitionHandler {
             flag.setUsed(true);
             flag.setUsedBy(teamId);
 
+            String attacker = teamNameMap.get(teamId);
+            String victim = teamNameMap.get(flag.getBelongTo());
+
+            logService.log(LogLevel.NORMAL, LogKind.SYSTEM,
+                    "Round[]，队伍[%s]成功提交了队伍[%s]的Flag", attacker, victim);
+
             try {
                 if (sseEmitter != null) {
-                    sseEmitter.send(LiveLogEvent.AttackEvent(teamService.getById(teamId).getName(),
-                            teamService.getById(flag.getBelongTo()).getName(), getTitle()));
+                    sseEmitter.send(LiveLogEvent.AttackEvent(attacker, victim, getTitle()));
                     sseEmitter.complete();
                 }
             } catch (IOException ie) {
@@ -190,7 +216,9 @@ public class CompetitionHandler {
         kubernetesService.clearResource();
         systemService.finishAll();
         this.sseEmitter = null;
+        this.teamNameMap.clear();
         this.status = CompetitionStatus.FINISHED;
+        logService.log(LogLevel.IMPORTANT, LogKind.SYSTEM, "比赛结束!");
     }
 
     @PreDestroy
@@ -232,7 +260,7 @@ public class CompetitionHandler {
 
     public Round getRound() {
         Round round = new Round();
-        if (isRunning()){
+        if (isRunning()) {
             LocalDateTime startTime = runningCompetition.getStartTime();
             LocalDateTime nowTime = LocalDateTime.now();
 

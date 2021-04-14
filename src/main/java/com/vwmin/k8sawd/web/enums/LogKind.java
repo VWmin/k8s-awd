@@ -6,7 +6,8 @@ package com.vwmin.k8sawd.web.enums;
  * @date 2021/3/28 17:05
  */
 public enum LogKind {
-    MANAGER_OPERATE("manager_operate");
+    MANAGER_OPERATE("manager_operate"),
+    SYSTEM("system");
 
     private final String value;
 
