@@ -1,10 +1,8 @@
 package com.vwmin.k8sawd.web.task;
 
+import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.service.KubernetesService;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import org.quartz.*;
 
 /**
  * 做一些比赛结束的清理
@@ -16,8 +14,12 @@ public class GameCheckJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
-        KubernetesService kubernetesService = (KubernetesService) jobDataMap.get("kubernetesService");
+        CompetitionHandler competitionHandler = (CompetitionHandler) jobDataMap.get("competitionHandler");
 
-        kubernetesService.clearResource();
+        try {
+            competitionHandler.finishAll();
+        } catch (SchedulerException e) {
+            throw new JobExecutionException(e.getUnderlyingException());
+        }
     }
 }

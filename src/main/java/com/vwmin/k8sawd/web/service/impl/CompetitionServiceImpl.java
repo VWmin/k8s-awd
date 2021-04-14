@@ -114,7 +114,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private void setGameCheckTask() throws SchedulerException {
         Competition competition = competitionHandler.getRunningCompetition();
         JobDetail job = JobBuilder.newJob(GameCheckJob.class).withIdentity("gameCheckJob").build();
-        job.getJobDataMap().put("kubernetesService", kubernetesService);
+        job.getJobDataMap().put("competitionHandler", competitionHandler);
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
                 .startAt(localDateTime2Date(competition.getEndTime()))
