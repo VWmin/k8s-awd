@@ -81,7 +81,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         // 写入记录，并设置为alive
         save(competition);
         systemService.setCompetition(competition);
-        competitionHandler.setRunningCompetition(competition);
+
 
         // 对于新的比赛，清理先前比赛的队伍数据
         teamService.removeAll();
@@ -91,6 +91,11 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
         // 对于新的比赛，清理先前的日志
         logService.removeALl();
+
+        // 正式将系统比赛状态设为SET
+        competitionHandler.setRunningCompetition(competition);
+
+
 
         startAt = LocalDateTimeUtil.now().plusMinutes(1);
 
