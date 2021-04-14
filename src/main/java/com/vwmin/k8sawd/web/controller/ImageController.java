@@ -53,7 +53,7 @@ public class ImageController {
     @GetMapping("/image/demo")
     public ResponseEntity<Response> demo(@RequestParam int id) {
         Image image = imageService.getById(id);
-        kubernetesService.demo(image.getName(), image.getPort());
+        kubernetesService.demo(image);
         runningDemo = id;
         return Response.success();
     }
@@ -68,5 +68,23 @@ public class ImageController {
     @GetMapping("/image/runningDemo")
     public ResponseEntity<Response> runningDemo(){
         return Response.success(runningDemo);
+    }
+
+    @GetMapping("/image/current")
+    public ResponseEntity<Response> currentImage(){
+        return Response.success(imageService.image().getId());
+    }
+
+    @GetMapping("/image/select")
+    public ResponseEntity<Response> selectImage(@RequestParam int id){
+        Image image = imageService.getById(id);
+        imageService.setImage(image);
+        return Response.success("已选择镜像[ " + image.getName() + " ], 将在下一次比赛启动时生效");
+    }
+
+    @GetMapping("/image/reset")
+    public ResponseEntity<Response> reset2Default(){
+        imageService.reset();
+        return Response.success("已选择默认镜像, 将在下一次比赛启动时生效");
     }
 }

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vwmin.k8sawd.web.entity.Competition;
+import com.vwmin.k8sawd.web.entity.Image;
 import com.vwmin.k8sawd.web.entity.System;
 import com.vwmin.k8sawd.web.mapper.SystemMapper;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
@@ -66,6 +67,26 @@ public class SystemServiceImpl extends ServiceImpl<SystemMapper, System> impleme
         LambdaUpdateWrapper<System> condition = new LambdaUpdateWrapper<>();
         condition.eq(System::getSysKey, key);
         saveOrUpdate(new System(key, value), condition);
+    }
+
+    @Override
+    public int image() {
+        LambdaQueryWrapper<System> condition = new LambdaQueryWrapper<>();
+        condition.eq(System::getSysKey, System.KEY_IMAGE);
+        String val = getOne(condition).getSysValue();
+        return NumberUtil.isInteger(val)
+                ? Integer.parseInt(val)
+                : -1;
+    }
+
+    @Override
+    public void setImage(Image image) {
+        put(System.KEY_IMAGE, image.getId().toString());
+    }
+
+    @Override
+    public void resetImage() {
+        put(System.KEY_IMAGE, System.VAL_NULL);
     }
 
     private boolean exist(String key) {

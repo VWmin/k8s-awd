@@ -1,5 +1,6 @@
 package com.vwmin.k8sawd.web.task;
 
+import com.vwmin.k8sawd.web.entity.Image;
 import com.vwmin.k8sawd.web.entity.Team;
 import com.vwmin.k8sawd.web.service.KubernetesService;
 import com.vwmin.k8sawd.web.service.TeamService;
@@ -31,13 +32,13 @@ public class DeploymentJob implements Job {
         KubernetesService kubernetesService = (KubernetesService) jobDataMap.get("kubernetesService");
         Integer competitionId = (Integer) jobDataMap.get("competitionId");
         List<Team> teams = ((TeamService) jobDataMap.get("teamService")).teamsByCompetition(competitionId);
+        Image image = (Image) jobDataMap.get("image");
 
         log.info("正在为比赛{}创建deploy，共计{}", competitionId, teams.size());
 
 
         for (Team team : teams){
-            // fixme
-            kubernetesService.deploy(competitionId, team.getId(), "awd:1.0");
+            kubernetesService.deploy(competitionId, team.getId(), image);
         }
     }
 }

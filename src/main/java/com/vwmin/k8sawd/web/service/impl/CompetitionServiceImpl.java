@@ -35,6 +35,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private final TeamService teamService;
     private final BulletinService bulletinService;
     private final LogService logService;
+    private final ImageService imageService;
     private final Scheduler scheduler;
     private final KubernetesService kubernetesService;
     private final CompetitionHandler competitionHandler;
@@ -44,12 +45,14 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
     private LocalDateTime startAt;
 
     public CompetitionServiceImpl(SystemService systemService, TeamService teamService,
-                                  BulletinService bulletinService, LogService logService, Scheduler scheduler,
+                                  BulletinService bulletinService, LogService logService,
+                                  ImageService imageService, Scheduler scheduler,
                                   KubernetesService kubernetesService, CompetitionHandler competitionHandler) {
         this.systemService = systemService;
         this.teamService = teamService;
         this.bulletinService = bulletinService;
         this.logService = logService;
+        this.imageService = imageService;
         this.scheduler = scheduler;
         this.kubernetesService = kubernetesService;
         this.competitionHandler = competitionHandler;
@@ -58,6 +61,7 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     @PostConstruct
     public void init() {
+        // 初始化设置的比赛
         int id = systemService.runningCompetition();
         if (id != -1) {
             competitionHandler.setRunningCompetition(getById(id));
@@ -148,6 +152,8 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
         job.getJobDataMap().put("teamService", teamService);
         // 传入当前比赛id
         job.getJobDataMap().put("competitionId", competition.getId());
+        // 传入比赛使用镜像
+        job.getJobDataMap().put("image", imageService.image());
 
         SimpleTrigger trigger = TriggerBuilder.newTrigger()
                 .startAt(localDateTime2Date(competition.getStartTime()))

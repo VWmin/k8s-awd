@@ -1,5 +1,6 @@
 package com.vwmin.k8sawd.web.service.impl;
 
+import com.vwmin.k8sawd.web.entity.Image;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.service.KubernetesService;
 import io.fabric8.kubernetes.api.model.*;
@@ -46,9 +47,9 @@ public class KubernetesServiceImpl implements KubernetesService {
     }
 
     @Override
-    public void deploy(int competitionId, int teamId, String imageName) {
+    public void deploy(int competitionId, int teamId, Image image) {
         String appName = nameRule(competitionId, teamId);
-        runSingle(appName, imageName, 80);
+        runSingle(appName, image.getName(), image.getPort());
     }
 
     @Override
@@ -99,9 +100,9 @@ public class KubernetesServiceImpl implements KubernetesService {
     }
 
     @Override
-    public void demo(String imageName, int targetPort) {
+    public void demo(Image image) {
         stopSingle("awd-demo");
-        runSingle("awd-demo", imageName, targetPort);
+        runSingle("awd-demo", image.getName(), image.getPort());
     }
 
     @Override

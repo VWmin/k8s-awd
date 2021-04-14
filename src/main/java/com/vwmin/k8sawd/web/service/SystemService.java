@@ -3,6 +3,7 @@ package com.vwmin.k8sawd.web.service;
 import cn.hutool.core.lang.Pair;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.vwmin.k8sawd.web.entity.Competition;
+import com.vwmin.k8sawd.web.entity.Image;
 import com.vwmin.k8sawd.web.entity.System;
 
 /**
@@ -40,4 +41,9 @@ public interface SystemService extends IService<System> {
     void put(String key, String val);
 
 
+    int image();
+
+    void setImage(Image image);
+
+    void resetImage();
 }

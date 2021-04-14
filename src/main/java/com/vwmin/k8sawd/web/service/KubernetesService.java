@@ -1,5 +1,6 @@
 package com.vwmin.k8sawd.web.service;
 
+import com.vwmin.k8sawd.web.entity.Image;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 
 /**
@@ -11,8 +12,8 @@ public interface KubernetesService {
 
     boolean clearResource();
     String serviceEntry(int competitionId, int teamId);
-    void deploy(int competitionId, int teamId, String imageName);
+    void deploy(int competitionId, int teamId, Image image);
     void writeFlag(CompetitionHandler competitionHandler, int competitionId, int teamId) throws InterruptedException;
-    void demo(String imageName, int targetPort);
+    void demo(Image image);
     void stopDemo();
 }
