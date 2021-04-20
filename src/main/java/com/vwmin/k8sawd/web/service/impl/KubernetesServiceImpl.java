@@ -141,7 +141,7 @@ public class KubernetesServiceImpl implements KubernetesService {
         }
     }
 
-    private void runSingle(String appName, String imageName, int targetPort){
+    private void runSingle(String appName, String imageName, int targetPort) {
         // 创建一个deployment
         client.apps().deployments().create(new DeploymentBuilder()
                 .withNewMetadata()
@@ -169,18 +169,28 @@ public class KubernetesServiceImpl implements KubernetesService {
                 .build()
         );
 
-        // 创建一个service
+        // 创建一个web-service
         client.services().create(new ServiceBuilder()
                         .withNewMetadata()
-                        .withName(appName + "-service")
+                        .withName(appName + "-web-service")
                         .endMetadata()
                         .withNewSpec()
                         .addToSelector("app", appName)
-//                    .withNewType("NodePort") //指定宿主机上绑定端口
-                        .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(targetPort).build())
-//                    .withPorts(new ServicePortBuilder().withPort(80).withNewTargetPort(80).build())
+                        .withPorts(new ServicePortBuilder().withName(appName + "-web-port").withPort(80).withNewTargetPort(targetPort).build())
                         .endSpec()
+                        .build()
+        );
 
+        // 创建一个ssh-service
+        client.services().create(new ServiceBuilder()
+                        .withNewMetadata()
+                        .withName(appName + "-ssh-service")
+                        .endMetadata()
+                        .withNewSpec()
+                        .addToSelector("app", appName)
+                        .withNewType("NodePort")
+                        .withPorts(new ServicePortBuilder().withName(appName + "-ssh-port").withPort(22).withNewTargetPort(22).build())
+                        .endSpec()
                         .build()
         );
 
@@ -207,7 +217,7 @@ public class KubernetesServiceImpl implements KubernetesService {
                 "Pod[%s:%s]已创建", appName, "http://121.36.230.118:30232/deployment/" + appName + "/");
     }
 
-    private void stopSingle(String appName){
+    private void stopSingle(String appName) {
         client.apps().deployments().withName(appName + "-deployment").delete();
         client.services().withName(appName + "-service").delete();
         client.network().ingresses().withName(appName + "-ingress").delete();

@@ -92,6 +92,8 @@ public class ImageController {
     @GetMapping("/image/reset")
     public ResponseEntity<Response> reset2Default(){
         imageService.reset();
+        logService.log(LogLevel.IMPORTANT, LogKind.MANAGER_OPERATE,
+                "已选择默认镜像, 将在下一次比赛启动时生效");
         return Response.success("已选择默认镜像, 将在下一次比赛启动时生效");
     }
 }
