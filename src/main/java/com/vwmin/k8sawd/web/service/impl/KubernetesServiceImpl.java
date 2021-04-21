@@ -204,7 +204,7 @@ public class KubernetesServiceImpl implements KubernetesService {
                 .addNewRule()
                 .withNewHttp()
                 .addNewPath()
-                .withPath("/deployment/" + appName + "(/|$)(.*)").withNewBackend().withServiceName(appName + "-service").withServicePort(new IntOrString(80)).endBackend()
+                .withPath("/deployment/" + appName + "(/|$)(.*)").withNewBackend().withServiceName(appName + "-web-service").withServicePort(new IntOrString(80)).endBackend()
                 .endPath()
                 .endHttp()
                 .endRule()
