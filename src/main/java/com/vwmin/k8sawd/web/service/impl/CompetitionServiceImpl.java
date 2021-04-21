@@ -186,6 +186,9 @@ public class CompetitionServiceImpl extends ServiceImpl<CompetitionMapper, Compe
 
     private void checkTime(LocalDateTime startTime, LocalDateTime endTime) {
         LocalDateTime nowTime = LocalDateTime.now();
+        if (startTime == null || endTime == null) {
+            throw new RoutineException(ResponseCode.FAIL, "请选择时间");
+        }
 
         // 开始时间至少在当前时间 1h 后
         Duration fromNow = LocalDateTimeUtil.between(nowTime, startTime);
