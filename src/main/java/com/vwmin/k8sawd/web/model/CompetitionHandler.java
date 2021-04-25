@@ -230,10 +230,17 @@ public class CompetitionHandler {
     public GameBox gameBoxByTeamId(int teamId) {
         Flag flag = getFlagByTeamId(teamId);
 
-        String title = runningCompetition.getTitle();
+        String title = "web服务入口";
         String entry = kubernetesService.serviceEntry(getId(), teamId);
-        return new GameBox(title, teamService.getById(teamId).getName(),
-                entry, runningCompetition.getScore(), flag != null && flag.isUsed(), "暂无描述");
+        return new GameBox(title, teamNameMap.get(teamId), entry, flag != null && flag.isUsed(),
+                "靶机web服务入口");
+    }
+
+    public GameBox sshEntryByTeamId(int teamId) {
+        String title = "ssh服务入口";
+        String entry = kubernetesService.sshEntry(getId(), teamId);
+        return new GameBox(title, teamNameMap.get(teamId), entry, false,
+                "靶机ssh服务入口，请自行使用ssh客户端连接");
     }
 
     public boolean isAttacked(int teamId) {
@@ -290,7 +297,6 @@ public class CompetitionHandler {
         private String title;
         private String teamName;
         private String entry;
-        private int score;
         private boolean isAttacked;
         private String description;
     }

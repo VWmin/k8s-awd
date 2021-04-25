@@ -52,6 +52,14 @@ public class KubernetesServiceImpl implements KubernetesService {
     }
 
     @Override
+    public String sshEntry(int competitionId, int teamId){
+        String appName = nameRule(competitionId, teamId);
+        return client.services()
+                .withName(appName + "-ssh-service")
+                .getURL(appName + "-ssh-port").substring(6);
+    }
+
+    @Override
     public void deploy(int competitionId, int teamId, Image image) {
         String appName = nameRule(competitionId, teamId);
         runSingle(appName, image.getName(), image.getPort(), image.isEnableSsh());

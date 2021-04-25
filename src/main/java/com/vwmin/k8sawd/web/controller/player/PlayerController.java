@@ -6,6 +6,7 @@ import com.vwmin.k8sawd.web.enums.CompetitionStatus;
 import com.vwmin.k8sawd.web.model.CompetitionHandler;
 import com.vwmin.k8sawd.web.model.Response;
 import com.vwmin.k8sawd.web.service.BulletinService;
+import com.vwmin.k8sawd.web.service.ImageService;
 import com.vwmin.k8sawd.web.service.TeamService;
 import lombok.Data;
 import org.springframework.http.*;
@@ -25,12 +26,14 @@ public class PlayerController {
     private final TeamService teamService;
     private final CompetitionHandler competitionHandler;
     private final BulletinService bulletinService;
+    private final ImageService imageService;
 
     public PlayerController(TeamService teamService,
-                            CompetitionHandler competitionHandler, BulletinService bulletinService) {
+                            CompetitionHandler competitionHandler, BulletinService bulletinService, ImageService imageService) {
         this.teamService = teamService;
         this.competitionHandler = competitionHandler;
         this.bulletinService = bulletinService;
+        this.imageService = imageService;
     }
 
 
@@ -47,6 +50,9 @@ public class PlayerController {
         Team teamByToken = teamService.getTeamByToken(token);
         return Response.success(new ArrayList<CompetitionHandler.GameBox>() {{
             add(competitionHandler.gameBoxByTeamId(teamByToken.getId()));
+            if (imageService.image().isEnableSsh()) {
+                add(competitionHandler.sshEntryByTeamId(teamByToken.getId()));
+            }
         }});
     }
 

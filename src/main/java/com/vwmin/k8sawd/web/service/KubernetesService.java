@@ -12,6 +12,7 @@ public interface KubernetesService {
 
     boolean clearResource();
     String serviceEntry(int competitionId, int teamId);
+    String sshEntry(int competitionId, int teamId);
     void deploy(int competitionId, int teamId, Image image);
     void writeFlag(CompetitionHandler competitionHandler, int competitionId, int teamId) throws InterruptedException;
     void demo(Image image);
