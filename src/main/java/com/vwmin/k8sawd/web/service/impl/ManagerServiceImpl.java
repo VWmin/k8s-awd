@@ -10,9 +10,11 @@ import com.vwmin.k8sawd.web.entity.BaseEntity;
 import com.vwmin.k8sawd.web.entity.Manager;
 import com.vwmin.k8sawd.web.exception.RoutineException;
 import com.vwmin.k8sawd.web.mapper.ManagerMapper;
+import com.vwmin.k8sawd.web.model.ResponseCode;
 import com.vwmin.k8sawd.web.service.ManagerService;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -75,7 +77,7 @@ public class ManagerServiceImpl extends ServiceImpl<ManagerMapper, Manager> impl
 
     @Override
     public void clearToken(String token) {
-        if (StrUtil.isNotEmpty(token)){
+        if (StrUtil.isNotEmpty(token)) {
             LambdaUpdateWrapper<Manager> condition = new LambdaUpdateWrapper<>();
             condition.eq(Manager::getToken, token).set(Manager::getToken, "");
             update(condition);
@@ -94,5 +96,13 @@ public class ManagerServiceImpl extends ServiceImpl<ManagerMapper, Manager> impl
         LambdaQueryWrapper<Manager> condition = new LambdaQueryWrapper<>();
         condition.eq(Manager::getToken, token);
         return count(condition) != 0;
+    }
+
+    @Override
+    public boolean removeById(Serializable id) {
+        if (count() == 1) {
+            throw new RoutineException(ResponseCode.FAIL, "至少保留个管理员账号");
+        }
+        return super.removeById(id);
     }
 }
