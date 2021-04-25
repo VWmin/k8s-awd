@@ -51,6 +51,8 @@ public class CompetitionHandler {
 
     private CompetitionStatus status = CompetitionStatus.UNSET;
 
+    private final int defaultRoundDuration = 120; // second
+
 
     public CompetitionHandler(FlagService flagService, TeamService teamService,
                               SystemService systemService, LogService logService,
@@ -132,6 +134,7 @@ public class CompetitionHandler {
         Map<Integer, List<Flag>> collect = flagMap.values().stream().filter(Flag::isUsed)
                 .collect(Collectors.groupingBy(Flag::getUsedBy));
         int baseScore = runningCompetition.getScore();
+        long round = nowRound();
         collect.forEach((k, v) -> {
             int plusScore = baseScore * v.size();
 
@@ -141,9 +144,9 @@ public class CompetitionHandler {
             teamService.updateById(team);
 
             logService.log(LogLevel.NORMAL, LogKind.SYSTEM,
-                    "Round[]，队伍[%s]，得分：%d", team.getName(), plusScore);
+                    "Round[%d]，队伍[%s]，得分：%d", team.getName(), plusScore, round);
         });
-        logService.log(LogLevel.WARNING, LogKind.SYSTEM, "第fixme轮统计完成.");
+        logService.log(LogLevel.WARNING, LogKind.SYSTEM, "第%d轮统计完成.", round);
     }
 
     public void flushFlag() {
@@ -160,7 +163,7 @@ public class CompetitionHandler {
      */
     public void updateFlag(int teamId, String flagVal) {
         logService.log(LogLevel.NORMAL, LogKind.SYSTEM,
-                "Round[]，队伍[%s]，生成Flag[%s]", teamNameMap.get(teamId), flagVal);
+                "Round[%d]，队伍[%s]，生成Flag[%s]", nowRound(), teamNameMap.get(teamId), flagVal);
         flagMap.put(flagVal, new Flag(teamId, flagVal));
     }
 
@@ -195,7 +198,7 @@ public class CompetitionHandler {
             String victim = teamNameMap.get(flag.getBelongTo());
 
             logService.log(LogLevel.NORMAL, LogKind.SYSTEM,
-                    "Round[]，队伍[%s]成功提交了队伍[%s]的Flag", attacker, victim);
+                    "Round[%d]，队伍[%s]成功提交了队伍[%s]的Flag", nowRound(), attacker, victim);
 
             try {
                 if (sseEmitter != null) {
@@ -265,6 +268,12 @@ public class CompetitionHandler {
         return runningCompetition.getTitle();
     }
 
+    private long nowRound(){
+        LocalDateTime startTime = runningCompetition.getStartTime();
+        LocalDateTime nowTime = LocalDateTime.now();
+        return LocalDateTimeUtil.between(startTime, nowTime).getSeconds() / defaultRoundDuration + 1;
+    }
+
     public Round getRound() {
         Round round = new Round();
         if (isRunning()) {
@@ -277,8 +286,8 @@ public class CompetitionHandler {
 
             long offset = LocalDateTimeUtil.between(startTime, nowTime).getSeconds();
 
-            round.roundDuration = 60;
-            round.nowRound = offset / round.roundDuration;
+            round.roundDuration = defaultRoundDuration;
+            round.nowRound = offset / round.roundDuration + 1;
             round.roundRemainTime = round.roundDuration - (offset % round.roundDuration);
         }
         round.status = this.status;
