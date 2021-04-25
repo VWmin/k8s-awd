@@ -15,5 +15,6 @@ import lombok.EqualsAndHashCode;
 public class Image extends BaseEntity {
     private String name;
     private int port;
+    private boolean enableSsh;
     private String description;
 }

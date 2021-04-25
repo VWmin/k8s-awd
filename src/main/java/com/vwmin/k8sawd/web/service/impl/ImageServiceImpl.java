@@ -25,6 +25,7 @@ public class ImageServiceImpl extends ServiceImpl<ImageMapper, Image> implements
         defaultImage = new Image();
         defaultImage.setName("awd:1.0");
         defaultImage.setPort(80);
+        defaultImage.setEnableSsh(true);
     }
 
     @Override

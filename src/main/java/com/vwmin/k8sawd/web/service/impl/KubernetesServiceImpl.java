@@ -54,7 +54,7 @@ public class KubernetesServiceImpl implements KubernetesService {
     @Override
     public void deploy(int competitionId, int teamId, Image image) {
         String appName = nameRule(competitionId, teamId);
-        runSingle(appName, image.getName(), image.getPort());
+        runSingle(appName, image.getName(), image.getPort(), image.isEnableSsh());
     }
 
     @Override
@@ -107,7 +107,7 @@ public class KubernetesServiceImpl implements KubernetesService {
     @Override
     public void demo(Image image) {
         stopSingle("awd-demo");
-        runSingle("awd-demo", image.getName(), image.getPort());
+        runSingle("awd-demo", image.getName(), image.getPort(), image.isEnableSsh());
     }
 
     @Override
@@ -141,7 +141,7 @@ public class KubernetesServiceImpl implements KubernetesService {
         }
     }
 
-    private void runSingle(String appName, String imageName, int targetPort) {
+    private void runSingle(String appName, String imageName, int targetPort, boolean enableSsh) {
         // 创建一个deployment
         client.apps().deployments().create(new DeploymentBuilder()
                 .withNewMetadata()
@@ -182,17 +182,19 @@ public class KubernetesServiceImpl implements KubernetesService {
         );
 
         // 创建一个ssh-service
-        client.services().create(new ServiceBuilder()
-                        .withNewMetadata()
-                        .withName(appName + "-ssh-service")
-                        .endMetadata()
-                        .withNewSpec()
-                        .addToSelector("app", appName)
-                        .withNewType("NodePort")
-                        .withPorts(new ServicePortBuilder().withName(appName + "-ssh-port").withPort(22).withNewTargetPort(22).build())
-                        .endSpec()
-                        .build()
-        );
+        if (enableSsh){
+            client.services().create(new ServiceBuilder()
+                    .withNewMetadata()
+                    .withName(appName + "-ssh-service")
+                    .endMetadata()
+                    .withNewSpec()
+                    .addToSelector("app", appName)
+                    .withNewType("NodePort")
+                    .withPorts(new ServicePortBuilder().withName(appName + "-ssh-port").withPort(22).withNewTargetPort(22).build())
+                    .endSpec()
+                    .build()
+            );
+        }
 
         // 创建一个Ingress
         client.network().ingresses().create(new IngressBuilder()
