@@ -60,7 +60,7 @@ public class DataPanelController {
     @GetMapping("/base")
     public ResponseEntity<Response> base(){
         return Response.success(new HashMap<String, String>(){{
-            put("title", "这是啥");
+            put("title", "FWY 8003117070");
             put("language", "zh-CN");
         }});
     }
