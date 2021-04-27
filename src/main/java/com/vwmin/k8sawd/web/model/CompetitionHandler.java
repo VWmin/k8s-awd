@@ -128,11 +128,12 @@ public class CompetitionHandler {
     }
 
     private void statistic() {
-        // 攻击得分
-        Map<Integer, List<Flag>> collect = flagMap.values().stream().filter(Flag::isUsed)
-                .collect(Collectors.groupingBy(Flag::getUsedBy));
         Map<Integer, Integer> magnification = new HashMap<>();
-        collect.forEach((k, v) -> magnification.put(k, v.size()));
+
+        // 攻击得分
+        flagMap.values().stream().filter(Flag::isUsed)
+                .collect(Collectors.groupingBy(Flag::getUsedBy))
+                .forEach((k, v) -> magnification.put(k, v.size()));
 
         // 防御得分
         flagMap.values().stream().filter(e -> !e.isUsed()).forEach(e -> {
