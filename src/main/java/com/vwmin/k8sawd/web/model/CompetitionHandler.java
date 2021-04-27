@@ -21,10 +21,7 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -51,7 +48,7 @@ public class CompetitionHandler {
 
     private CompetitionStatus status = CompetitionStatus.UNSET;
 
-    private final int defaultRoundDuration = 120; // second
+    public final int defaultRoundDuration = 120; // second
 
 
     public CompetitionHandler(FlagService flagService, TeamService teamService,
@@ -131,12 +128,23 @@ public class CompetitionHandler {
     }
 
     private void statistic() {
+        // 攻击得分
         Map<Integer, List<Flag>> collect = flagMap.values().stream().filter(Flag::isUsed)
                 .collect(Collectors.groupingBy(Flag::getUsedBy));
+        Map<Integer, Integer> magnification = new HashMap<>();
+        collect.forEach((k, v) -> magnification.put(k, v.size()));
+
+        // 防御得分
+        flagMap.values().stream().filter(e -> !e.isUsed()).forEach(e -> {
+            Integer key = e.getBelongTo();
+            Integer after = magnification.getOrDefault(key, 0) + 1;
+            magnification.put(key, after);
+        });
+
         int baseScore = runningCompetition.getScore();
         long round = nowRound();
-        collect.forEach((k, v) -> {
-            int plusScore = baseScore * v.size();
+        magnification.forEach((k, v) -> {
+            int plusScore = baseScore * v;
 
             // 向数据库写入得分
             Team team = teamService.getById(k);
@@ -144,7 +152,7 @@ public class CompetitionHandler {
             teamService.updateById(team);
 
             logService.log(LogLevel.NORMAL, LogKind.SYSTEM,
-                    "Round[%d]，队伍[%s]，得分：%d", team.getName(), plusScore, round);
+                    "Round[%d]，队伍[%s]，得分：%d", round, team.getName(), plusScore);
         });
         logService.log(LogLevel.WARNING, LogKind.SYSTEM, "第%d轮统计完成.", round);
     }
@@ -247,7 +255,8 @@ public class CompetitionHandler {
     }
 
     public boolean isAttacked(int teamId) {
-        return isRunning() && getFlagByTeamId(teamId).isUsed();
+        Flag flagByTeamId = getFlagByTeamId(teamId);
+        return isRunning() && (flagByTeamId != null && flagByTeamId.isUsed());
     }
 
     public String getFlagValByTeamId(int teamId) {
@@ -268,7 +277,7 @@ public class CompetitionHandler {
         return runningCompetition.getTitle();
     }
 
-    private long nowRound(){
+    private long nowRound() {
         LocalDateTime startTime = runningCompetition.getStartTime();
         LocalDateTime nowTime = LocalDateTime.now();
         return LocalDateTimeUtil.between(startTime, nowTime).getSeconds() / defaultRoundDuration + 1;
