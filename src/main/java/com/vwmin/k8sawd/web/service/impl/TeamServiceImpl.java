@@ -102,16 +102,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
     }
 
     @Override
-    public void clearToken(String token) {
-        if (StrUtil.isNotEmpty(token)){
-
-            LambdaUpdateWrapper<Team> condition = new LambdaUpdateWrapper<>();
-            condition.eq(Team::getSecretKey, token).set(Team::getSecretKey, "");
-            update(condition);
-        }
-    }
-
-    @Override
     public Team getTeamByToken(String token) {
         LambdaQueryWrapper<Team> condition = new LambdaQueryWrapper<>();
         condition.eq(Team::getSecretKey, token);
