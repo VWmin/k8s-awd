@@ -44,7 +44,7 @@ public class CompetitionHandler {
     private final LogService logService;
     private final KubernetesService kubernetesService;
     private final Scheduler scheduler;
-    private SseEmitter sseEmitter = null;
+    private final Map<String, SseEmitter> emitters;
 
     private CompetitionStatus status = CompetitionStatus.UNSET;
 
@@ -63,6 +63,7 @@ public class CompetitionHandler {
         runningCompetition = null;
         flagMap = new ConcurrentHashMap<>();
         teamNameMap = new ConcurrentHashMap<>();
+        emitters = new ConcurrentHashMap<>();
     }
 
     public Competition getRunningCompetition() {
@@ -210,13 +211,11 @@ public class CompetitionHandler {
                     "Round[%d]，队伍[%s]成功提交了队伍[%s]的Flag", nowRound(), attacker, victim);
 
             try {
-                if (sseEmitter != null) {
+                for (SseEmitter sseEmitter : emitters.values()) {
                     sseEmitter.send(LiveLogEvent.AttackEvent(attacker, victim, getTitle()));
-                    sseEmitter.complete();
                 }
             } catch (IOException ie) {
                 ie.printStackTrace();
-                sseEmitter.completeWithError(ie);
             }
         }
     }
@@ -227,7 +226,7 @@ public class CompetitionHandler {
         scheduler.clear();
         kubernetesService.clearResource();
         systemService.finishAll();
-        this.sseEmitter = null;
+        emitters.clear();
         this.teamNameMap.clear();
         this.status = CompetitionStatus.FINISHED;
         logService.log(LogLevel.IMPORTANT, LogKind.SYSTEM, "比赛结束!");
@@ -305,8 +304,20 @@ public class CompetitionHandler {
 
     }
 
-    public void setSseEmitter(SseEmitter sseEmitter) {
-        this.sseEmitter = sseEmitter;
+    public void setSseEmitter(String token, SseEmitter sseEmitter) {
+        sseEmitter.onCompletion(() -> {
+            log.info("结束连接：{}", token);
+            emitters.remove(token);
+        });
+        sseEmitter.onError(throwable -> {
+            log.info("连接出错：{}-{}", token, throwable.getMessage());
+            emitters.remove(token);
+        });
+        sseEmitter.onTimeout(() -> {
+            log.info("连接超时：{}", token);
+            emitters.remove(token);
+        });
+        emitters.put(token, sseEmitter);
     }
 
 

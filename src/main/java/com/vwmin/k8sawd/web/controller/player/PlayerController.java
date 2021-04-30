@@ -116,9 +116,9 @@ public class PlayerController {
 
     @GetMapping("/livelog")
     @ExpectedStatus(expected = {CompetitionStatus.SET, CompetitionStatus.RUNNING, CompetitionStatus.FINISHED})
-    public SseEmitter livelog() {
-        SseEmitter sseEmitter = new SseEmitter(1000 * 60 * 5L);
-        competitionHandler.setSseEmitter(sseEmitter);
+    public SseEmitter livelog(@RequestParam String token) {
+        SseEmitter sseEmitter = new SseEmitter(0L);
+        competitionHandler.setSseEmitter(token, sseEmitter);
         return sseEmitter;
     }
 
