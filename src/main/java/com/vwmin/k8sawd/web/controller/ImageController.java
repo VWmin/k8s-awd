@@ -60,7 +60,7 @@ public class ImageController {
         Image image = imageService.getById(id);
         kubernetesService.demo(image);
         runningDemo = id;
-        return Response.success();
+        return Response.success("Demo已运行在http://121.36.230.118:30232/deployment/awd-demo/");
     }
 
     @DeleteMapping("/image/demo")

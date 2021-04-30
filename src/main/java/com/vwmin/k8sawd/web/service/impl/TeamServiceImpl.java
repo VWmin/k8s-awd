@@ -52,8 +52,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
             repeatCheck(team);
 
             // 生成16位数字、字母格式密码
-//            team.setPassword(RandomUtil.randomString(16));
-            team.setPassword("123");
+            team.setPassword(RandomUtil.randomString(16));
+//            team.setPassword("123");
 
             // 生成32位hex格式token
             team.setSecretKey(HexUtil.encodeHexStr(RandomUtil.randomBytes(16)));

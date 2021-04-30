@@ -60,7 +60,7 @@ public class DataPanelController {
     @GetMapping("/base")
     public ResponseEntity<Response> base(){
         return Response.success(new HashMap<String, String>(){{
-            put("title", "FWY 8003117070");
+            put("title", "AWD");
             put("language", "zh-CN");
         }});
     }
@@ -71,7 +71,6 @@ public class DataPanelController {
 
         private int checkDown;
 
-        // fixme: 原程序中是Go程数量，到时候换掉
         private int numGoroutine;
 
         private double memAllocated;

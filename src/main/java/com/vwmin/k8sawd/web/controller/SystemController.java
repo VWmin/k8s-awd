@@ -45,7 +45,7 @@ public class SystemController {
         return Response.success(competitionHandler.status());
     }
 
-    @DeleteMapping("/system/competition")
+    @DeleteMapping("/competition")
     public ResponseEntity<Response> finishAll() throws SchedulerException {
 
         competitionHandler.finishAll();

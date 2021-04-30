@@ -90,7 +90,7 @@ public class TeamController {
         return Response.success();
     }
 
-    @PostMapping("/team/resetPassword")
+    @PostMapping("/team/reset")
     @ExpectedStatus(expected = {CompetitionStatus.SET})
     public ResponseEntity<Response> resetPass(@RequestBody Team team) {
 
