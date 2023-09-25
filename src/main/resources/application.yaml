@@ -1,16 +1,16 @@
 spring:
   datasource:
     druid:
-      url: jdbc:mysql://121.36.230.118:3306/k8s?useUnicode=true&characterEncoding=utf8&useTimezone=true&serverTimezone=GMT%2B8&zeroDateTimeBehavior=convertToNull&useSSL=true
-      username: root
-      password: justmiss
+      url: jdbc:mysql://xxx:3306/k8s?useUnicode=true&characterEncoding=utf8&useTimezone=true&serverTimezone=GMT%2B8&zeroDateTimeBehavior=convertToNull&useSSL=true
+      username: xxx
+      password: xxx
 
 server:
   port: 7070
 
 
 k8s-awd:
-  master-url: https://121.36.230.118:6443
+  master-url: https://xxx:6443
   ca-cert-file: ca.crt
   client-cert-file: apiserver-kubelet-client.crt
   client-key-file: apiserver-kubelet-client.key
